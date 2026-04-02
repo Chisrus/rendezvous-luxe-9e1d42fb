@@ -11,9 +11,11 @@ const Index = () => {
             <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
             <span className="text-foreground font-light">DeLuxe</span>
           </span>
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-            S'inscrire
-          </Button>
+          <a href="/auth">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
+              S'inscrire
+            </Button>
+          </a>
         </div>
       </nav>
 
@@ -34,9 +36,11 @@ const Index = () => {
             Un cercle privé où discrétion, élégance et authenticité se rencontrent. 
             Chaque profil est vérifié, chaque connexion est unique.
           </p>
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-10 py-6 text-base font-semibold tracking-wide shadow-lg shadow-primary/20">
-            Rejoindre le Cercle
-          </Button>
+          <a href="/auth">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-10 py-6 text-base font-semibold tracking-wide shadow-lg shadow-primary/20">
+              Rejoindre le Cercle
+            </Button>
+          </a>
           <p className="mt-4 text-sm text-muted-foreground">Sur invitation ou candidature • 100% confidentiel</p>
         </div>
       </section>
