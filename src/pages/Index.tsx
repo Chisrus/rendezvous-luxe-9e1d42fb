@@ -11,9 +11,11 @@ const Index = () => {
             <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
             <span className="text-foreground font-light">DeLuxe</span>
           </span>
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-            S'inscrire
-          </Button>
+          <a href="/auth">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
+              S'inscrire
+            </Button>
+          </a>
         </div>
       </nav>
 
