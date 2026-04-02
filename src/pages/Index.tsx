@@ -139,10 +139,10 @@ const Index = () => {
 };
 
 const PricingCard = ({
-  icon, name, price, period, features, cta, highlighted, badge,
+  icon, name, price, period, features, cta, highlighted, badge, link,
 }: {
   icon: React.ReactNode; name: string; price: string; period: string;
-  features: string[]; cta: string; highlighted: boolean; badge?: string;
+  features: string[]; cta: string; highlighted: boolean; badge?: string; link?: string;
 }) => (
   <div className={`relative p-8 rounded-2xl border transition-all duration-300 ${
     highlighted
@@ -170,13 +170,15 @@ const PricingCard = ({
         </li>
       ))}
     </ul>
-    <Button className={`w-full rounded-full font-semibold ${
-      highlighted
-        ? "bg-primary text-primary-foreground hover:bg-primary/85"
-        : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
-    }`}>
-      {cta}
-    </Button>
+    <a href={link} target="_blank" rel="noopener noreferrer">
+      <Button className={`w-full rounded-full font-semibold ${
+        highlighted
+          ? "bg-primary text-primary-foreground hover:bg-primary/85"
+          : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+      }`}>
+        {cta}
+      </Button>
+    </a>
   </div>
 );
 
