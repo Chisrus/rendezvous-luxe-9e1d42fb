@@ -82,32 +82,35 @@ const Index = () => {
             <PricingCard
               icon={<Star className="w-6 h-6 text-primary" />}
               name="Découverte"
-              price="Gratuit"
-              period=""
+              price="3 000 F"
+              period="/mois"
               features={["Création de profil", "Parcourir les profils", "5 likes par jour", "Support par email"]}
               cta="Commencer"
               highlighted={false}
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=3000"
             />
             {/* Premium */}
             <PricingCard
               icon={<Crown className="w-6 h-6 text-primary" />}
               name="Premium"
-              price="49€"
+              price="5 000 F"
               period="/mois"
               features={["Likes illimités", "Voir qui vous aime", "Messagerie prioritaire", "Profil mis en avant", "Matchmaking assisté"]}
               cta="Choisir Premium"
               highlighted={true}
               badge="Populaire"
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=5000"
             />
             {/* VIP */}
             <PricingCard
               icon={<Diamond className="w-6 h-6 text-primary" />}
               name="VIP"
-              price="149€"
+              price="10 000 F"
               period="/mois"
               features={["Tout Premium inclus", "Concierge personnel", "Événements privés", "Profil vérifié badge or", "Accès prioritaire nouveaux membres"]}
               cta="Devenir VIP"
               highlighted={false}
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=10000"
             />
           </div>
         </div>
@@ -136,10 +139,10 @@ const Index = () => {
 };
 
 const PricingCard = ({
-  icon, name, price, period, features, cta, highlighted, badge,
+  icon, name, price, period, features, cta, highlighted, badge, link,
 }: {
   icon: React.ReactNode; name: string; price: string; period: string;
-  features: string[]; cta: string; highlighted: boolean; badge?: string;
+  features: string[]; cta: string; highlighted: boolean; badge?: string; link?: string;
 }) => (
   <div className={`relative p-8 rounded-2xl border transition-all duration-300 ${
     highlighted
@@ -167,13 +170,15 @@ const PricingCard = ({
         </li>
       ))}
     </ul>
-    <Button className={`w-full rounded-full font-semibold ${
-      highlighted
-        ? "bg-primary text-primary-foreground hover:bg-primary/85"
-        : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
-    }`}>
-      {cta}
-    </Button>
+    <a href={link} target="_blank" rel="noopener noreferrer">
+      <Button className={`w-full rounded-full font-semibold ${
+        highlighted
+          ? "bg-primary text-primary-foreground hover:bg-primary/85"
+          : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+      }`}>
+        {cta}
+      </Button>
+    </a>
   </div>
 );
 
