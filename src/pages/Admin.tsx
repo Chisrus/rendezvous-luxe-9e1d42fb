@@ -157,12 +157,16 @@ const Admin = () => {
               Administration
             </span>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setForm(emptyForm); setEditingId(null); } }}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-                <Plus className="w-4 h-4 mr-1" /> Nouveau profil
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin-chat")} className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6">
+              Messagerie Admin
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setForm(emptyForm); setEditingId(null); } }}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
+                  <Plus className="w-4 h-4 mr-1" /> Nouveau profil
+                </Button>
+              </DialogTrigger>
             <DialogContent className="bg-card border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -211,9 +215,10 @@ const Admin = () => {
                 </Button>
               </form>
             </DialogContent>
-          </Dialog>
-        </div>
-      </nav>
+              </Dialog>
+            </div>
+          </div>
+        </nav>
 
       <div className="pt-24 px-6 max-w-6xl mx-auto">
         <h2 className="text-xl font-semibold text-foreground mb-6">{profiles.length} profil(s)</h2>
