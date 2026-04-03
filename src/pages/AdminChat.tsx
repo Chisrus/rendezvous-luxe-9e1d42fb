@@ -69,7 +69,7 @@ const AdminChat = () => {
       console.error(error);
       toast({ title: "Erreur", description: "Impossible de charger les messages.", variant: "destructive" });
     } else {
-      setMessages(data || []);
+      setMessages((data as Message[]) || []);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     }
   };
@@ -87,7 +87,9 @@ const AdminChat = () => {
         content: newMessage.trim(),
         profile_sender_id: selectedMockProfile,
         profile_receiver_id: selectedTargetUser,
-      });
+        sender_id: user!.id,
+        receiver_id: selectedTargetUser,
+      } as any);
 
       if (error) throw error;
       setNewMessage("");
