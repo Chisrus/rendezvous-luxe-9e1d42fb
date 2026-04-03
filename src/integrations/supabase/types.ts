@@ -19,6 +19,8 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          profile_receiver_id: string | null
+          profile_sender_id: string | null
           read: boolean | null
           receiver_id: string
           sender_id: string
@@ -27,6 +29,8 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          profile_receiver_id?: string | null
+          profile_sender_id?: string | null
           read?: boolean | null
           receiver_id: string
           sender_id: string
@@ -35,6 +39,8 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          profile_receiver_id?: string | null
+          profile_sender_id?: string | null
           read?: boolean | null
           receiver_id?: string
           sender_id?: string
