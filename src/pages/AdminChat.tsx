@@ -87,7 +87,9 @@ const AdminChat = () => {
         content: newMessage.trim(),
         profile_sender_id: selectedMockProfile,
         profile_receiver_id: selectedTargetUser,
-      });
+        sender_id: user!.id,
+        receiver_id: selectedTargetUser,
+      } as any);
 
       if (error) throw error;
       setNewMessage("");

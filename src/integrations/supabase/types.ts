@@ -22,8 +22,8 @@ export type Database = {
           profile_receiver_id: string | null
           profile_sender_id: string | null
           read: boolean | null
-          receiver_id: string
-          sender_id: string
+          receiver_id: string | null
+          sender_id: string | null
         }
         Insert: {
           content: string
@@ -32,8 +32,8 @@ export type Database = {
           profile_receiver_id?: string | null
           profile_sender_id?: string | null
           read?: boolean | null
-          receiver_id: string
-          sender_id: string
+          receiver_id?: string | null
+          sender_id?: string | null
         }
         Update: {
           content?: string
@@ -42,8 +42,8 @@ export type Database = {
           profile_receiver_id?: string | null
           profile_sender_id?: string | null
           read?: boolean | null
-          receiver_id?: string
-          sender_id?: string
+          receiver_id?: string | null
+          sender_id?: string | null
         }
         Relationships: []
       }
