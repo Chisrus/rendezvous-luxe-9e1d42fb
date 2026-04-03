@@ -62,33 +62,48 @@ const Admin = () => {
 
       if (form.photo) {
         const ext = form.photo.name.split(".").pop();
-        const path = `${crypto.randomUUID()}.${ext}`;
+        const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+          ? crypto.randomUUID() 
+          : `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const path = `${uuid}.${ext}`;
+        
         const { error: uploadErr } = await supabase.storage.from("profile-photos").upload(path, form.photo);
-        if (uploadErr) throw uploadErr;
+        if (uploadErr) {
+          console.error("Storage upload error:", uploadErr);
+          throw new Error(`Erreur lors du téléchargement de la photo: ${uploadErr.message}`);
+        }
         const { data: urlData } = supabase.storage.from("profile-photos").getPublicUrl(path);
         photoUrl = urlData.publicUrl;
       }
 
+      const parsedAge = parseInt(form.age);
+
       const profileData = {
         name: form.name.trim(),
-        age: form.age ? parseInt(form.age) : null,
+        age: !isNaN(parsedAge) ? parsedAge : null,
         city: form.city || null,
         bio: form.bio || null,
         gender: form.gender || null,
         interests: form.interests ? form.interests.split(",").map((s) => s.trim()).filter(Boolean) : null,
         is_vip: form.is_vip,
         ...(photoUrl && { photo_url: photoUrl }),
-        ...(!editingId && { created_by: user!.id }),
+        ...(!editingId && { created_by: user?.id }),
       };
 
       if (editingId) {
         const { error } = await supabase.from("profiles").update(profileData).eq("id", editingId);
-        if (error) throw error;
-        toast({ title: "Profil modifié" });
+        if (error) {
+          console.error("Update profile error:", error);
+          throw new Error(`Erreur lors de la modification: ${error.message}`);
+        }
+        toast({ title: "Succès", description: "Profil modifié avec succès." });
       } else {
         const { error } = await supabase.from("profiles").insert(profileData);
-        if (error) throw error;
-        toast({ title: "Profil créé" });
+        if (error) {
+          console.error("Insert profile error:", error);
+          throw new Error(`Erreur lors de la création: ${error.message}`);
+        }
+        toast({ title: "Succès", description: "Profil créé avec succès." });
       }
 
       setForm(emptyForm);
@@ -96,7 +111,8 @@ const Admin = () => {
       setDialogOpen(false);
       fetchProfiles();
     } catch (error: any) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      console.error("HandleSubmit Error:", error);
+      toast({ title: "Erreur", description: error.message || "Impossible d'enregistrer le profil.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
