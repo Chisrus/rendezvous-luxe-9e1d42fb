@@ -88,7 +88,7 @@ const Profiles = () => {
                 </div>
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {p.name}{p.age ? `, ${p.age}` : ""}
+                    {p.name}{p.age ? `, ${p.age} ans` : ""}
                   </h3>
                   {p.city && (
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
