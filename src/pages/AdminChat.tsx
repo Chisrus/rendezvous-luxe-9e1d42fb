@@ -69,7 +69,7 @@ const AdminChat = () => {
       console.error(error);
       toast({ title: "Erreur", description: "Impossible de charger les messages.", variant: "destructive" });
     } else {
-      setMessages(data || []);
+      setMessages((data as Message[]) || []);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     }
   };
