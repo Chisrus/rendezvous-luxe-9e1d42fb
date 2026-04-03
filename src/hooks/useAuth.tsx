@@ -8,32 +8,59 @@ export const useAuth = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
+    // Primary initialization: always resolves loading state
+    async function initializeAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      if (session?.user) {
+        setUser(session.user);
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (mounted) setIsAdmin(!!roleData);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+      if (mounted) setLoading(false);
+    }
+
+    initializeAuth();
+
+    // Listener for subsequent auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return;
+
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          const { data } = await supabase
+          const { data: roleData } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", currentUser.id)
             .eq("role", "admin")
             .maybeSingle();
-          setIsAdmin(!!data);
+          if (mounted) setIsAdmin(!!roleData);
         } else {
           setIsAdmin(false);
         }
-
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
