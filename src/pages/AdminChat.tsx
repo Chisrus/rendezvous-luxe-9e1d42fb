@@ -40,7 +40,7 @@ const AdminChat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate("/");
+    if (!loading && (!user || !isAdmin)) navigate("/", { replace: true });
   }, [user, isAdmin, loading, navigate]);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const AdminChat = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
+  if (loading || !user || !isAdmin) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

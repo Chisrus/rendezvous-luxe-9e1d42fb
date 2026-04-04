@@ -42,8 +42,8 @@ const Admin = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) navigate("/auth");
-    if (!loading && user && !isAdmin) navigate("/");
+    if (!loading && !user) navigate("/auth", { replace: true });
+    if (!loading && user && !isAdmin) navigate("/", { replace: true });
   }, [user, isAdmin, loading, navigate]);
 
   const fetchProfiles = async () => {
@@ -144,7 +144,7 @@ const Admin = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
+  if (loading || !user || !isAdmin) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
 
   return (
     <div className="min-h-screen bg-background">
