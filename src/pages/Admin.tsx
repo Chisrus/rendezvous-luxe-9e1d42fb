@@ -42,7 +42,8 @@ const Admin = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate("/");
+    if (!loading && !user) navigate("/auth");
+    if (!loading && user && !isAdmin) navigate("/");
   }, [user, isAdmin, loading, navigate]);
 
   const fetchProfiles = async () => {
