@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useEffect, useState, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -20,11 +20,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
-    const checkAdmin = async (userId: string) => {
+    const checkAdmin = async (userId: string): Promise<boolean> => {
       try {
         const { data } = await supabase
           .from("user_roles")
@@ -32,63 +33,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .eq("user_id", userId)
           .eq("role", "admin")
           .maybeSingle();
-        if (mounted) setIsAdmin(!!data);
+        return !!data;
       } catch (error) {
         console.error("Error checking admin status:", error);
-        if (mounted) setIsAdmin(false);
+        return false;
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!mounted) return;
-        
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+    const processUser = async (currentUser: User | null) => {
+      if (!mountedRef.current) return;
+      setUser(currentUser);
 
-        if (currentUser) {
-          await checkAdmin(currentUser.id);
-        } else {
-          if (mounted) setIsAdmin(false);
-        }
-        
-        if (mounted) setLoading(false);
+      if (currentUser) {
+        const admin = await checkAdmin(currentUser.id);
+        if (mountedRef.current) setIsAdmin(admin);
+      } else {
+        if (mountedRef.current) setIsAdmin(false);
+      }
+
+      if (mountedRef.current) setLoading(false);
+    };
+
+    // Set up the auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        // Fire and forget - don't await inside the callback
+        processUser(session?.user ?? null);
       }
     );
 
-    const initSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!mounted) return;
-        
-        if (session?.user) {
-           setUser(session.user);
-           await checkAdmin(session.user.id);
-        } else {
-           setUser(null);
-           setIsAdmin(false);
-        }
-      } catch (error) {
-         console.error("Error getting session:", error);
-      } finally {
-         if (mounted) setLoading(false);
-      }
-    };
-
-    initSession();
-
+    // Safety fallback - if nothing fires within 8s, stop loading
     const fallbackTimer = setTimeout(() => {
-      if (mounted && loading) {
+      if (mountedRef.current) {
         setLoading(false);
       }
-    }, 5000);
+    }, 8000);
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
       subscription.unsubscribe();
       clearTimeout(fallbackTimer);
     };
-  }, [loading]);
+  }, []); // Empty dependency array - run only once
 
   const signOut = async () => {
     await supabase.auth.signOut();
