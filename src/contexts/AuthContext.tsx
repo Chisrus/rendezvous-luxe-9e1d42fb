@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (mounted && loading) {
         setLoading(false);
       }
-    }, 2000);
+    }, 5000);
 
     return () => {
       mounted = false;
