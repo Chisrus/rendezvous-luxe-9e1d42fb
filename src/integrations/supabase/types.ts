@@ -57,6 +57,7 @@ export type Database = {
           gender: string | null
           id: string
           interests: string[] | null
+          is_verified: boolean | null
           is_vip: boolean | null
           name: string
           photo_url: string | null
@@ -71,6 +72,7 @@ export type Database = {
           gender?: string | null
           id?: string
           interests?: string[] | null
+          is_verified?: boolean | null
           is_vip?: boolean | null
           name: string
           photo_url?: string | null
@@ -85,6 +87,7 @@ export type Database = {
           gender?: string | null
           id?: string
           interests?: string[] | null
+          is_verified?: boolean | null
           is_vip?: boolean | null
           name?: string
           photo_url?: string | null
