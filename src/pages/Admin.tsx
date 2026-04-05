@@ -157,10 +157,10 @@ const Admin = () => {
           <h2 className="text-xl font-semibold text-foreground">{profiles.length} profil(s)</h2>
           <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-                  <Plus className="w-4 h-4 mr-1" /> Nouveau profil
-                </Button>
-              </DialogTrigger>
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
+                <Plus className="w-4 h-4 mr-1" /> Nouveau profil
+              </Button>
+            </DialogTrigger>
             <DialogContent className="bg-card border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -213,13 +213,8 @@ const Admin = () => {
                 </Button>
               </form>
             </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </nav>
-
-      <div className="pt-24 px-6 max-w-6xl mx-auto">
-        <h2 className="text-xl font-semibold text-foreground mb-6">{profiles.length} profil(s)</h2>
+          </Dialog>
+        </div>
 
         {profiles.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
@@ -258,7 +253,7 @@ const Admin = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
