@@ -27,9 +27,10 @@ interface Profile {
   gender: string | null;
   interests: string[] | null;
   is_vip: boolean | null;
+  is_verified: boolean | null;
 }
 
-const emptyForm = { name: "", age: "", city: "", bio: "", gender: "", interests: "", is_vip: false, photo: null as File | null };
+const emptyForm = { name: "", age: "", city: "", bio: "", gender: "", interests: "", is_vip: false, is_verified: true, photo: null as File | null };
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();

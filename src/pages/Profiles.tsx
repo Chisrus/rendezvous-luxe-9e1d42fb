@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, MapPin, Heart, MessageCircle, LogOut, Shield } from "lucide-react";
+import { Crown, MapPin, Heart, MessageCircle, LogOut, Shield, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Profile {
