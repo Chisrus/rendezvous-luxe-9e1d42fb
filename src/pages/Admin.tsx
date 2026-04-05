@@ -88,6 +88,7 @@ const Admin = () => {
         gender: form.gender || null,
         interests: form.interests ? form.interests.split(",").map((s) => s.trim()).filter(Boolean) : null,
         is_vip: form.is_vip,
+        is_verified: form.is_verified,
         ...(photoUrl && { photo_url: photoUrl }),
         ...(!editingId && { created_by: user?.id }),
       };
@@ -129,6 +130,7 @@ const Admin = () => {
       gender: p.gender || "",
       interests: p.interests?.join(", ") || "",
       is_vip: p.is_vip || false,
+      is_verified: p.is_verified || false,
       photo: null,
     });
     setEditingId(p.id);
