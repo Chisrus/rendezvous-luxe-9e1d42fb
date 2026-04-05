@@ -16,6 +16,7 @@ interface Profile {
   gender: string | null;
   interests: string[] | null;
   is_vip: boolean | null;
+  is_verified: boolean | null;
 }
 
 const Profiles = () => {

@@ -214,6 +214,10 @@ const Admin = () => {
                   <Switch checked={form.is_vip} onCheckedChange={(v) => setForm({ ...form, is_vip: v })} />
                   <Label className="text-foreground">Membre VIP</Label>
                 </div>
+                <div className="flex items-center gap-3">
+                  <Switch checked={form.is_verified} onCheckedChange={(v) => setForm({ ...form, is_verified: v })} />
+                  <Label className="text-foreground">Profil Vérifié ✓</Label>
+                </div>
                 <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Créer le profil"}
                 </Button>
