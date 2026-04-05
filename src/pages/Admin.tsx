@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ArrowLeft, Edit2 } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 import {
   Dialog,
   DialogContent,
@@ -150,27 +151,16 @@ const Admin = () => {
   if (loading || !user || !isAdmin) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/profiles")}>
-              <ArrowLeft className="w-4 h-4 mr-1" /> Retour
-            </Button>
-            <span className="text-xl font-semibold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Administration
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate("/admin-chat")} className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6">
-              Messagerie Admin
-            </Button>
-            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setForm(emptyForm); setEditingId(null); } }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-                  <Plus className="w-4 h-4 mr-1" /> Nouveau profil
-                </Button>
-              </DialogTrigger>
+    <AdminLayout>
+      <div className="px-6 max-w-6xl mx-auto pt-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-foreground">{profiles.length} profil(s)</h2>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setForm(emptyForm); setEditingId(null); } }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
+                <Plus className="w-4 h-4 mr-1" /> Nouveau profil
+              </Button>
+            </DialogTrigger>
             <DialogContent className="bg-card border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -223,13 +213,8 @@ const Admin = () => {
                 </Button>
               </form>
             </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </nav>
-
-      <div className="pt-24 px-6 max-w-6xl mx-auto">
-        <h2 className="text-xl font-semibold text-foreground mb-6">{profiles.length} profil(s)</h2>
+          </Dialog>
+        </div>
 
         {profiles.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
@@ -268,7 +253,7 @@ const Admin = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

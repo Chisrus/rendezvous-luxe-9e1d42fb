@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 
 interface Profile {
   id: string;
@@ -106,17 +107,8 @@ const AdminChat = () => {
   if (loading || !user || !isAdmin) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <nav className="w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/50 p-4 flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Retour Admin
-        </Button>
-        <span className="text-xl font-semibold text-foreground flex-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-          Messagerie d'Usurpation (Admin)
-        </span>
-      </nav>
-
-      <div className="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col gap-4 h-[calc(100vh-80px)]">
+    <AdminLayout>
+      <div className="max-w-4xl w-full mx-auto p-4 flex flex-col gap-4 h-[calc(100vh-64px)]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">👤 Vous jouez le rôle de (Profil Faux) :</label>
@@ -137,7 +129,6 @@ const AdminChat = () => {
               </SelectTrigger>
               <SelectContent>
                 {realUsers.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                {/* Fallback to messaging other mock profiles if there are no real users yet */}
                 {realUsers.length === 0 && mockProfiles.map(p => <SelectItem key={p.id} value={p.id}>{p.name} (Faux Profil aussi)</SelectItem>)}
               </SelectContent>
             </Select>
@@ -183,7 +174,7 @@ const AdminChat = () => {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
