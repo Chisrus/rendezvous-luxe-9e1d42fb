@@ -88,8 +88,9 @@ const Profiles = () => {
                   )}
                 </div>
                 <div className="p-5">
-                  <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {p.name}{p.age ? `, ${p.age} ans` : ""}
+                    {p.is_verified && <BadgeCheck className="w-4 h-4 text-primary shrink-0" />}
                   </h3>
                   {p.city && (
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
