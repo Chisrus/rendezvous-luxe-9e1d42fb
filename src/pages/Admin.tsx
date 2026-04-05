@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ArrowLeft, Edit2 } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 import {
   Dialog,
   DialogContent,
