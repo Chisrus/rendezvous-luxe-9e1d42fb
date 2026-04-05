@@ -27,9 +27,10 @@ interface Profile {
   gender: string | null;
   interests: string[] | null;
   is_vip: boolean | null;
+  is_verified: boolean | null;
 }
 
-const emptyForm = { name: "", age: "", city: "", bio: "", gender: "", interests: "", is_vip: false, photo: null as File | null };
+const emptyForm = { name: "", age: "", city: "", bio: "", gender: "", interests: "", is_vip: false, is_verified: true, photo: null as File | null };
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -87,6 +88,7 @@ const Admin = () => {
         gender: form.gender || null,
         interests: form.interests ? form.interests.split(",").map((s) => s.trim()).filter(Boolean) : null,
         is_vip: form.is_vip,
+        is_verified: form.is_verified,
         ...(photoUrl && { photo_url: photoUrl }),
         ...(!editingId && { created_by: user?.id }),
       };
@@ -128,6 +130,7 @@ const Admin = () => {
       gender: p.gender || "",
       interests: p.interests?.join(", ") || "",
       is_vip: p.is_vip || false,
+      is_verified: p.is_verified || false,
       photo: null,
     });
     setEditingId(p.id);
@@ -210,6 +213,10 @@ const Admin = () => {
                 <div className="flex items-center gap-3">
                   <Switch checked={form.is_vip} onCheckedChange={(v) => setForm({ ...form, is_vip: v })} />
                   <Label className="text-foreground">Membre VIP</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch checked={form.is_verified} onCheckedChange={(v) => setForm({ ...form, is_verified: v })} />
+                  <Label className="text-foreground">Profil Vérifié ✓</Label>
                 </div>
                 <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Créer le profil"}
