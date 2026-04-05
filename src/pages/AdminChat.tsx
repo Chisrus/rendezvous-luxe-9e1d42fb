@@ -83,12 +83,15 @@ const AdminChat = () => {
     if (!newMessage.trim() || !selectedMockProfile || !selectedTargetUser) return;
 
     try {
+      // Find if the target is a real user (id === created_by) to set receiver_id
+      const targetProfile = realUsers.find(p => p.id === selectedTargetUser);
       const { error } = await supabase.from("messages").insert({
         content: newMessage.trim(),
         profile_sender_id: selectedMockProfile,
         profile_receiver_id: selectedTargetUser,
         sender_id: user!.id,
-        receiver_id: selectedTargetUser,
+        // Only set receiver_id if target is a real user (their profile id = their auth user id)
+        receiver_id: targetProfile ? targetProfile.created_by : null,
       } as any);
 
       if (error) throw error;
