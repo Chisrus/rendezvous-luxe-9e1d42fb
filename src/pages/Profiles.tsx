@@ -3,8 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, MapPin, Heart, MessageCircle, LogOut, Shield, BadgeCheck } from "lucide-react";
+import { Crown, MapPin, Heart, MessageCircle, LogOut, Shield, BadgeCheck, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 interface Profile {
   id: string;
@@ -23,6 +25,8 @@ const Profiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const { user, isAdmin, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const unreadNotifs = useUnreadNotifications();
+  const unreadMsgs = useUnreadMessages();
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -46,13 +50,29 @@ const Profiles = () => {
             <span className="text-foreground font-light">DeLuxe</span>
           </a>
           <div className="flex items-center gap-3">
+            <Button size="sm" variant="ghost" onClick={() => navigate("/inbox")} className="relative text-muted-foreground">
+              <MessageCircle className="w-4 h-4 mr-1" /> Messages
+              {unreadMsgs > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">
+                  {unreadMsgs > 9 ? "9+" : unreadMsgs}
+                </span>
+              )}
+            </Button>
+            <div className="relative cursor-pointer">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">
+                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
+                </span>
+              )}
+            </div>
             {isAdmin && (
               <Button size="sm" variant="outline" onClick={() => navigate("/admin")} className="rounded-full border-primary/30 text-primary">
                 <Shield className="w-4 h-4 mr-1" /> Admin
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={signOut} className="text-muted-foreground">
-              <LogOut className="w-4 h-4 mr-1" /> Déconnexion
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
