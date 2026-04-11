@@ -125,7 +125,8 @@ const Profiles = () => {
                       ))}
                     </div>
                   )}
-                  <Button size="sm" className="w-full mt-4 rounded-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
+                  <Button size="sm" className="w-full mt-4 rounded-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+                    onClick={() => navigate(`/inbox?profileId=${p.id}&profileName=${encodeURIComponent(p.name)}&profilePhoto=${encodeURIComponent(p.photo_url || "")}`)}>
                     <MessageCircle className="w-4 h-4 mr-1" /> Envoyer un message
                   </Button>
                 </div>
