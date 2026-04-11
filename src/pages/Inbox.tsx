@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, MessageCircle, Bell, LogOut, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
@@ -28,6 +28,7 @@ interface Profile {
 const Inbox = () => {
   const { user, isAdmin, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<{ profile: Profile; lastMessage: Message; unread: number }[]>([]);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -39,6 +40,19 @@ const Inbox = () => {
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
+
+  // Auto-select profile from query params (coming from profile card)
+  useEffect(() => {
+    const profileId = searchParams.get("profileId");
+    const profileName = searchParams.get("profileName");
+    if (profileId && profileName && !selectedProfile) {
+      setSelectedProfile({
+        id: profileId,
+        name: profileName,
+        photo_url: searchParams.get("profilePhoto") || null,
+      });
+    }
+  }, [searchParams, selectedProfile]);
 
   // Load all profiles for name lookup
   useEffect(() => {
