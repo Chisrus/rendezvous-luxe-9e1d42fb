@@ -6,21 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Diamond } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) navigate("/profiles", { replace: true });
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgot) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe." });
+        setIsForgot(false);
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "Bienvenue !", description: "Connexion réussie." });
@@ -41,6 +57,8 @@ const Auth = () => {
     }
   };
 
+  if (authLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-md">
@@ -54,7 +72,7 @@ const Auth = () => {
           <div className="flex items-center justify-center gap-2 mt-4">
             <Diamond className="w-4 h-4 text-primary" />
             <span className="text-sm text-primary tracking-widest uppercase">
-              {isLogin ? "Connexion" : "Inscription"}
+              {isForgot ? "Mot de passe oublié" : isLogin ? "Connexion" : "Inscription"}
             </span>
           </div>
         </div>
@@ -72,36 +90,57 @@ const Auth = () => {
               className="bg-background border-border/50 focus:border-primary"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-              className="bg-background border-border/50 focus:border-primary"
-            />
-          </div>
+          {!isForgot && (
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+                className="bg-background border-border/50 focus:border-primary"
+              />
+            </div>
+          )}
           <Button
             type="submit"
             disabled={loading}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold"
           >
-            {loading ? "Chargement..." : isLogin ? "Se connecter" : "S'inscrire"}
+            {loading
+              ? "Chargement..."
+              : isForgot
+              ? "Envoyer le lien"
+              : isLogin
+              ? "Se connecter"
+              : "S'inscrire"}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            {isLogin ? "Pas encore membre ?" : "Déjà membre ?"}{" "}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
-            >
-              {isLogin ? "S'inscrire" : "Se connecter"}
-            </button>
-          </p>
+
+          {isLogin && !isForgot && (
+            <p className="text-center">
+              <button type="button" onClick={() => setIsForgot(true)} className="text-sm text-primary hover:underline">
+                Mot de passe oublié ?
+              </button>
+            </p>
+          )}
+
+          {isForgot ? (
+            <p className="text-center text-sm text-muted-foreground">
+              <button type="button" onClick={() => setIsForgot(false)} className="text-primary hover:underline">
+                Retour à la connexion
+              </button>
+            </p>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground">
+              {isLogin ? "Pas encore membre ?" : "Déjà membre ?"}{" "}
+              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
+                {isLogin ? "S'inscrire" : "Se connecter"}
+              </button>
+            </p>
+          )}
         </form>
       </div>
     </div>

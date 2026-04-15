@@ -82,40 +82,18 @@ const Index = () => {
             Choisissez la formule qui correspond à vos ambitions.
           </p>
           <div className="grid md:grid-cols-3 gap-8 items-start">
-            {/* Découverte */}
-            <PricingCard
-              icon={<Star className="w-6 h-6 text-primary" />}
-              name="Découverte"
-              price="3 000 F"
-              period="/mois"
+            <PricingCard icon={<Star className="w-6 h-6 text-primary" />} name="Découverte" price="3 000 F" period="/mois"
               features={["Création de profil", "Parcourir les profils", "5 likes par jour", "Support par email"]}
-              cta="Commencer"
-              highlighted={false}
-              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=3000"
-            />
-            {/* Premium */}
-            <PricingCard
-              icon={<Crown className="w-6 h-6 text-primary" />}
-              name="Premium"
-              price="5 000 F"
-              period="/mois"
+              cta="Commencer" highlighted={false}
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=3000" />
+            <PricingCard icon={<Crown className="w-6 h-6 text-primary" />} name="Premium" price="5 000 F" period="/mois"
               features={["Likes illimités", "Voir qui vous aime", "Messagerie prioritaire", "Profil mis en avant", "Matchmaking assisté"]}
-              cta="Choisir Premium"
-              highlighted={true}
-              badge="Populaire"
-              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=5000"
-            />
-            {/* VIP */}
-            <PricingCard
-              icon={<Diamond className="w-6 h-6 text-primary" />}
-              name="VIP"
-              price="10 000 F"
-              period="/mois"
+              cta="Choisir Premium" highlighted={true} badge="Populaire"
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=5000" />
+            <PricingCard icon={<Diamond className="w-6 h-6 text-primary" />} name="VIP" price="10 000 F" period="/mois"
               features={["Tout Premium inclus", "Concierge personnel", "Événements privés", "Profil vérifié badge or", "Accès prioritaire nouveaux membres"]}
-              cta="Devenir VIP"
-              highlighted={false}
-              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=10000"
-            />
+              cta="Devenir VIP" highlighted={false}
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=10000" />
           </div>
         </div>
       </section>
@@ -131,9 +109,9 @@ const Index = () => {
             <p className="text-muted-foreground text-sm mt-2">L'art de la rencontre d'exception.</p>
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">Conditions</a>
-            <a href="#" className="hover:text-primary transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-primary transition-colors">Contact</a>
+            <a href="/terms" className="hover:text-primary transition-colors">Conditions</a>
+            <a href="/privacy" className="hover:text-primary transition-colors">Confidentialité</a>
+            <a href="/contact" className="hover:text-primary transition-colors">Contact</a>
           </div>
           <p className="text-xs text-muted-foreground">© 2026 RencontreDeLuxe. Tous droits réservés.</p>
         </div>

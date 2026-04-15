@@ -27,9 +27,7 @@ const NotificationListener = () => {
             description: notif.message,
             duration: 8000,
           });
-
-          // Mark as read after display
-          supabase.from("notifications").update({ read: true } as any).eq("id", notif.id).then(() => {});
+          // Don't auto-mark as read — let user do it from /notifications page
         }
       )
       .subscribe();
