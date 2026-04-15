@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, MessageCircle, Bell, LogOut, Shield } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
-import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import UserNavbar from "@/components/UserNavbar";
 
 interface Message {
   id: string;
@@ -26,7 +25,7 @@ interface Profile {
 }
 
 const Inbox = () => {
-  const { user, isAdmin, signOut, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<{ profile: Profile; lastMessage: Message; unread: number }[]>([]);
@@ -34,14 +33,13 @@ const Inbox = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
-  const unreadNotifs = useUnreadNotifications();
-  const unreadMsgs = useUnreadMessages();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
 
-  // Auto-select profile from query params (coming from profile card)
+  // Auto-select profile from query params
   useEffect(() => {
     const profileId = searchParams.get("profileId");
     const profileName = searchParams.get("profileName");
@@ -67,52 +65,54 @@ const Inbox = () => {
   }, [user]);
 
   // Load conversations
-  useEffect(() => {
+  const loadConversations = async () => {
     if (!user || Object.keys(profiles).length === 0) return;
 
-    const loadConversations = async () => {
-      // Get messages where this user is sender or receiver
-      const { data: msgs } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
+    const { data: msgs } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order("created_at", { ascending: false });
 
-      if (!msgs) return;
+    if (!msgs) return;
 
-      // Group by the other profile
-      const convMap = new Map<string, { profile: Profile; lastMessage: Message; unread: number }>();
+    const convMap = new Map<string, { profile: Profile; lastMessage: Message; unread: number }>();
 
-      for (const m of msgs) {
-        // Determine the profile on the other side
-        let profileId: string | null = null;
-        if (m.sender_id === user.id) {
-          profileId = m.profile_receiver_id;
-        } else if (m.receiver_id === user.id) {
-          profileId = m.profile_sender_id;
-        }
-
-        if (!profileId || !profiles[profileId]) continue;
-
-        if (!convMap.has(profileId)) {
-          convMap.set(profileId, {
-            profile: profiles[profileId],
-            lastMessage: m,
-            unread: 0,
-          });
-        }
-
-        const conv = convMap.get(profileId)!;
-        if (m.receiver_id === user.id && !m.read) {
-          conv.unread++;
-        }
+    for (const m of msgs) {
+      let profileId: string | null = null;
+      if (m.sender_id === user.id) {
+        profileId = m.profile_receiver_id;
+      } else if (m.receiver_id === user.id) {
+        profileId = m.profile_sender_id;
       }
 
-      setConversations(Array.from(convMap.values()));
-    };
+      if (!profileId || !profiles[profileId]) continue;
 
+      if (!convMap.has(profileId)) {
+        convMap.set(profileId, {
+          profile: profiles[profileId],
+          lastMessage: m,
+          unread: 0,
+        });
+      }
+
+      const conv = convMap.get(profileId)!;
+      if (m.receiver_id === user.id && !m.read) {
+        conv.unread++;
+      }
+    }
+
+    setConversations(Array.from(convMap.values()));
+  };
+
+  useEffect(() => {
     loadConversations();
   }, [user, profiles]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Load messages for selected conversation
   useEffect(() => {
@@ -129,7 +129,6 @@ const Inbox = () => {
 
       if (data) {
         setMessages(data);
-        // Mark as read
         const unreadIds = data.filter(m => m.receiver_id === user.id && !m.read).map(m => m.id);
         if (unreadIds.length > 0) {
           await supabase.from("messages").update({ read: true }).in("id", unreadIds);
@@ -174,52 +173,16 @@ const Inbox = () => {
     });
 
     setNewMessage("");
+    // Refresh conversation list
+    setTimeout(() => loadConversations(), 500);
   };
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="text-xl font-semibold tracking-wide">
-            <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
-            <span className="text-foreground font-light">DeLuxe</span>
-          </a>
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="ghost" onClick={() => navigate("/profiles")} className="text-muted-foreground">
-              Profils
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => navigate("/inbox")} className="relative text-muted-foreground">
-              <MessageCircle className="w-4 h-4 mr-1" /> Messages
-              {unreadMsgs > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">
-                  {unreadMsgs > 9 ? "9+" : unreadMsgs}
-                </span>
-              )}
-            </Button>
-            <div className="relative">
-              <Bell className="w-5 h-5 text-muted-foreground" />
-              {unreadNotifs > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">
-                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
-                </span>
-              )}
-            </div>
-            {isAdmin && (
-              <Button size="sm" variant="outline" onClick={() => navigate("/admin")} className="rounded-full border-primary/30 text-primary">
-                <Shield className="w-4 h-4 mr-1" /> Admin
-              </Button>
-            )}
-            <Button size="sm" variant="ghost" onClick={signOut} className="text-muted-foreground">
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="pt-24 px-6 max-w-4xl mx-auto">
+      <UserNavbar />
+      <div className="pt-20 px-4 md:px-6 max-w-4xl mx-auto pb-6">
         {!selectedProfile ? (
           <>
             <h1 className="text-3xl font-bold text-foreground mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -244,7 +207,7 @@ const Inbox = () => {
                   >
                     <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
                       {conv.profile.photo_url ? (
-                        <img src={conv.profile.photo_url} alt={conv.profile.name} className="w-full h-full object-cover" />
+                        <img src={conv.profile.photo_url} alt={conv.profile.name} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <span className="text-lg font-light text-muted-foreground">{conv.profile.name[0]}</span>
                       )}
@@ -271,7 +234,7 @@ const Inbox = () => {
             <Button variant="ghost" size="sm" onClick={() => setSelectedProfile(null)} className="mb-4 text-muted-foreground">
               <ArrowLeft className="w-4 h-4 mr-1" /> Retour
             </Button>
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
                 {selectedProfile.photo_url ? (
                   <img src={selectedProfile.photo_url} alt={selectedProfile.name} className="w-full h-full object-cover" />
@@ -284,7 +247,7 @@ const Inbox = () => {
               </h2>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-2xl p-4 mb-4 h-[400px] overflow-y-auto space-y-3">
+            <div className="bg-card border border-border/50 rounded-2xl p-4 mb-4 h-[50vh] md:h-[400px] overflow-y-auto space-y-3">
               {messages.map(m => {
                 const isMine = m.sender_id === user?.id;
                 return (
@@ -302,17 +265,18 @@ const Inbox = () => {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="flex gap-2">
               <input
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage()}
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
                 placeholder="Votre message..."
                 className="flex-1 px-4 py-3 rounded-full bg-card border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
               />
-              <Button onClick={sendMessage} className="rounded-full bg-primary text-primary-foreground px-6">
+              <Button onClick={sendMessage} disabled={!newMessage.trim()} className="rounded-full bg-primary text-primary-foreground px-6">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
