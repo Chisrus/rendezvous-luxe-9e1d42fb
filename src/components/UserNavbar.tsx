@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MessageCircle, Bell, LogOut, Shield, Menu, User, Home } from "lucide-react";
+import { MessageCircle, Bell, LogOut, Shield, Menu, User, Home, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -19,6 +19,7 @@ const UserNavbar = () => {
 
   const navItems = [
     { path: "/profiles", label: "Profils", icon: Home },
+    { path: "/matches", label: "Matchs", icon: Heart },
     { path: "/inbox", label: "Messages", icon: MessageCircle, badge: unreadMsgs },
     { path: "/notifications", label: "Notifications", icon: Bell, badge: unreadNotifs },
     { path: "/profile/edit", label: "Mon Profil", icon: User },
