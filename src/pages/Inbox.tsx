@@ -34,6 +34,11 @@ const Inbox = () => {
   const [newMessage, setNewMessage] = useState("");
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loadedProfileIdRef = useRef<string | null>(null);
+
+  const selectProfile = (profile: Profile) => {
+    setSelectedProfile((prev) => (prev && prev.id === profile.id ? prev : profile));
+  };
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -120,6 +125,11 @@ const Inbox = () => {
   // Load messages for selected conversation
   useEffect(() => {
     if (!user || !selectedProfile) return;
+    if (loadedProfileIdRef.current === selectedProfile.id) {
+      // Already loaded; subscription below will handle new messages
+    }
+    const isSameProfile = loadedProfileIdRef.current === selectedProfile.id;
+    loadedProfileIdRef.current = selectedProfile.id;
 
     const loadMessages = async () => {
       const { data } = await supabase
@@ -139,7 +149,7 @@ const Inbox = () => {
       }
     };
 
-    loadMessages();
+    if (!isSameProfile) loadMessages();
 
     const channel = supabase
       .channel(`inbox-${selectedProfile.id}`)
@@ -162,22 +172,36 @@ const Inbox = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user, selectedProfile]);
+  }, [user, selectedProfile?.id]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !user || !selectedProfile) return;
 
-    await supabase.from("messages").insert({
-      content: newMessage.trim(),
+    const content = newMessage.trim();
+    setNewMessage("");
+    const { data: inserted } = await supabase.from("messages").insert({
+      content,
       sender_id: user.id,
       profile_receiver_id: selectedProfile.id,
       receiver_id: null,
       profile_sender_id: null,
-    });
+    }).select().single();
 
-    setNewMessage("");
-    // Refresh conversation list
-    setTimeout(() => loadConversations(), 500);
+    // Update conversation list locally instead of refetching
+    if (inserted) {
+      setConversations((prev) => {
+        const others = prev.filter((c) => c.profile.id !== selectedProfile.id);
+        const existing = prev.find((c) => c.profile.id === selectedProfile.id);
+        return [
+          {
+            profile: existing?.profile ?? selectedProfile,
+            lastMessage: inserted as Message,
+            unread: existing?.unread ?? 0,
+          },
+          ...others,
+        ];
+      });
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
@@ -205,7 +229,7 @@ const Inbox = () => {
                 {conversations.map(conv => (
                   <button
                     key={conv.profile.id}
-                    onClick={() => setSelectedProfile(conv.profile)}
+                    onClick={() => selectProfile(conv.profile)}
                     className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/40 transition-all text-left"
                   >
                     <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
