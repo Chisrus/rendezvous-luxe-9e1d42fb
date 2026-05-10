@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, MessageCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
+import { inboxCache } from "@/lib/inboxCache";
 
 interface Message {
   id: string;
@@ -28,13 +29,35 @@ const Inbox = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [conversations, setConversations] = useState<{ profile: Profile; lastMessage: Message; unread: number }[]>([]);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const initialUserId = user?.id ?? "";
+  const [conversations, setConversations] = useState<{ profile: Profile; lastMessage: Message; unread: number }[]>(
+    () => (initialUserId ? inboxCache.getConversations(initialUserId).data : [])
+  );
+  const [selectedProfile, setSelectedProfileState] = useState<Profile | null>(
+    () => (initialUserId ? inboxCache.getSelectedProfile(initialUserId) : null)
+  );
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (!initialUserId) return [];
+    const sel = inboxCache.getSelectedProfile(initialUserId);
+    if (!sel) return [];
+    return inboxCache.getMessages(initialUserId, sel.id).data ?? [];
+  });
   const [newMessage, setNewMessage] = useState("");
-  const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [profiles, setProfiles] = useState<Record<string, Profile>>(
+    () => (initialUserId ? inboxCache.getProfiles(initialUserId).data : {})
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const loadedProfileIdRef = useRef<string | null>(null);
+
+  const setSelectedProfile = (
+    next: Profile | null | ((prev: Profile | null) => Profile | null)
+  ) => {
+    setSelectedProfileState((prev) => {
+      const value = typeof next === "function" ? (next as (p: Profile | null) => Profile | null)(prev) : next;
+      if (user) inboxCache.setSelectedProfile(user.id, value);
+      return value;
+    });
+  };
 
   const selectProfile = (profile: Profile) => {
     setSelectedProfile((prev) => (prev && prev.id === profile.id ? prev : profile));
@@ -63,11 +86,17 @@ const Inbox = () => {
   // Load all profiles for name lookup
   useEffect(() => {
     if (!user) return;
+    const cached = inboxCache.getProfiles(user.id);
+    if (cached.fresh && Object.keys(cached.data).length > 0) {
+      setProfiles(cached.data);
+      return;
+    }
     supabase.from("profiles").select("id, name, photo_url").then(({ data }) => {
       if (data) {
         const map: Record<string, Profile> = {};
         data.forEach(p => { map[p.id] = p; });
         setProfiles(map);
+        inboxCache.setProfiles(user.id, map);
       }
     });
   }, [user]);
@@ -110,10 +139,18 @@ const Inbox = () => {
       }
     }
 
-    setConversations(Array.from(convMap.values()));
+    const list = Array.from(convMap.values());
+    setConversations(list);
+    inboxCache.setConversations(user.id, list);
   };
 
   useEffect(() => {
+    if (!user || Object.keys(profiles).length === 0) return;
+    const cached = inboxCache.getConversations(user.id);
+    if (cached.fresh) {
+      setConversations(cached.data);
+      return;
+    }
     loadConversations();
   }, [user, profiles]);
 
@@ -142,6 +179,7 @@ const Inbox = () => {
 
       if (data) {
         setMessages(data);
+        inboxCache.setMessages(user.id, selectedProfile.id, data);
         const unreadIds = data.filter(m => m.receiver_id === user.id && !m.read).map(m => m.id);
         if (unreadIds.length > 0) {
           await supabase.from("messages").update({ read: true }).in("id", unreadIds);
@@ -149,7 +187,13 @@ const Inbox = () => {
       }
     };
 
-    if (!isSameProfile) loadMessages();
+    const cachedMsgs = inboxCache.getMessages(user.id, selectedProfile.id);
+    if (cachedMsgs.fresh && cachedMsgs.data) {
+      setMessages(cachedMsgs.data);
+    } else if (!isSameProfile) {
+      if (cachedMsgs.data) setMessages(cachedMsgs.data);
+      loadMessages();
+    }
 
     const channel = supabase
       .channel(`inbox-${selectedProfile.id}`)
@@ -163,7 +207,11 @@ const Inbox = () => {
           (m.sender_id === user.id && m.profile_receiver_id === selectedProfile.id) ||
           (m.receiver_id === user.id && m.profile_sender_id === selectedProfile.id)
         ) {
-          setMessages(prev => [...prev, m]);
+          setMessages(prev => {
+            const next = [...prev, m];
+            inboxCache.setMessages(user.id, selectedProfile.id, next);
+            return next;
+          });
           if (m.receiver_id === user.id) {
             supabase.from("messages").update({ read: true }).eq("id", m.id).then(() => {});
           }
@@ -192,7 +240,7 @@ const Inbox = () => {
       setConversations((prev) => {
         const others = prev.filter((c) => c.profile.id !== selectedProfile.id);
         const existing = prev.find((c) => c.profile.id === selectedProfile.id);
-        return [
+        const next = [
           {
             profile: existing?.profile ?? selectedProfile,
             lastMessage: inserted as Message,
@@ -200,7 +248,13 @@ const Inbox = () => {
           },
           ...others,
         ];
+        if (user) inboxCache.setConversations(user.id, next);
+        return next;
       });
+      if (user) {
+        const prevMsgs = inboxCache.getMessages(user.id, selectedProfile.id).data ?? [];
+        inboxCache.setMessages(user.id, selectedProfile.id, [...prevMsgs, inserted as Message]);
+      }
     }
   };
 
