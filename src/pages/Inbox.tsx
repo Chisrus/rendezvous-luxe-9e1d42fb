@@ -43,14 +43,17 @@ const Inbox = () => {
   useEffect(() => {
     const profileId = searchParams.get("profileId");
     const profileName = searchParams.get("profileName");
-    if (profileId && profileName && !selectedProfile) {
-      setSelectedProfile({
-        id: profileId,
-        name: profileName,
-        photo_url: searchParams.get("profilePhoto") || null,
+    if (profileId && profileName) {
+      setSelectedProfile((prev) => {
+        if (prev && prev.id === profileId) return prev;
+        return {
+          id: profileId,
+          name: profileName,
+          photo_url: searchParams.get("profilePhoto") || null,
+        };
       });
     }
-  }, [searchParams, selectedProfile]);
+  }, [searchParams]);
 
   // Load all profiles for name lookup
   useEffect(() => {
