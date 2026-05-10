@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      likes: {
+        Row: {
+          created_at: string
+          id: string
+          liked_profile_id: string
+          liker_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          liked_profile_id: string
+          liker_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          liked_profile_id?: string
+          liker_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_liked_profile_id_fkey"
+            columns: ["liked_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

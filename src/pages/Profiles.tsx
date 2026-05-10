@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, MapPin, Heart, MessageCircle, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
+import { useToast } from "@/hooks/use-toast";
 
 interface Profile {
   id: string;
@@ -27,16 +28,42 @@ const Profiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user) loadProfiles(0);
+    if (user) {
+      loadProfiles(0);
+      loadLikes();
+    }
   }, [user]);
+
+  const loadLikes = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("likes").select("liked_profile_id").eq("liker_user_id", user.id);
+    if (data) setLikedIds(new Set(data.map((l: any) => l.liked_profile_id)));
+  };
+
+  const toggleLike = async (profileId: string) => {
+    if (!user) return;
+    const isLiked = likedIds.has(profileId);
+    if (isLiked) {
+      await supabase.from("likes").delete().eq("liker_user_id", user.id).eq("liked_profile_id", profileId);
+      setLikedIds(prev => { const n = new Set(prev); n.delete(profileId); return n; });
+    } else {
+      const { error } = await supabase.from("likes").insert({ liker_user_id: user.id, liked_profile_id: profileId });
+      if (!error) {
+        setLikedIds(prev => new Set(prev).add(profileId));
+        toast({ title: "Like envoyé", description: "Si c'est mutuel, vous serez notifié·e ✨" });
+      }
+    }
+  };
 
   const loadProfiles = async (p: number) => {
     const from = p * PAGE_SIZE;
@@ -113,10 +140,17 @@ const Profiles = () => {
                         ))}
                       </div>
                     )}
-                    <Button size="sm" className="w-full mt-4 rounded-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
-                      onClick={() => navigate(`/inbox?profileId=${p.id}&profileName=${encodeURIComponent(p.name)}&profilePhoto=${encodeURIComponent(p.photo_url || "")}`)}>
-                      <MessageCircle className="w-4 h-4 mr-1" /> Envoyer un message
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="rounded-full px-3"
+                        onClick={() => toggleLike(p.id)}
+                        aria-label={likedIds.has(p.id) ? "Retirer le like" : "Liker ce profil"}>
+                        <Heart className={`w-4 h-4 ${likedIds.has(p.id) ? "fill-primary text-primary" : ""}`} />
+                      </Button>
+                      <Button size="sm" className="flex-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+                        onClick={() => navigate(`/inbox?profileId=${p.id}&profileName=${encodeURIComponent(p.name)}&profilePhoto=${encodeURIComponent(p.photo_url || "")}`)}>
+                        <MessageCircle className="w-4 h-4 mr-1" /> Message
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
