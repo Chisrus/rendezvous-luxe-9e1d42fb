@@ -1,81 +1,97 @@
 
+# Leviers de conversion vers l'abonnement
 
-# Plan d'optimisation complète de RencontreDeLuxe
-
-Voici toutes les modifications identifiées pour avoir une plateforme optimale, classées par priorité.
-
----
-
-## 1. Authentification et Sécurité
-
-- **Mot de passe oublié** : Ajouter un lien "Mot de passe oublié" sur la page Auth + créer une page `/reset-password` pour réinitialiser le mot de passe
-- **Création automatique de profil à l'inscription** : Ajouter un trigger SQL `on_auth_user_created` qui crée automatiquement une entrée dans `profiles` avec le nom tiré de l'email. Actuellement un utilisateur inscrit n'a pas de profil, ce qui casse la logique de messagerie (car `id !== created_by`)
-- **Redirection intelligente** : Après login, rediriger vers `/profiles` si déjà connecté quand on visite `/auth`
-
-## 2. Profil utilisateur
-
-- **Page "Mon Profil"** : Permettre à un vrai utilisateur de modifier son nom, photo, bio, ville, age, genre, centres d'intérêt depuis une page `/profile/edit`
-- **Upload de photo de profil** pour les vrais utilisateurs (via le bucket `profile-photos` existant)
-- **RLS pour les vrais utilisateurs** : Ajouter une policy permettant à un utilisateur de modifier son propre profil (`UPDATE WHERE id = auth.uid()`)
-
-## 3. Navigation et UX
-
-- **Navbar partagée** : Créer un composant `UserNavbar` réutilisable (actuellement le header est dupliqué dans Profiles, Inbox et potentiellement d'autres pages)
-- **Page notifications utilisateur** : Ajouter une page `/notifications` listant toutes les notifications reçues (actuellement seul le toast temps réel existe, pas d'historique consultable)
-- **Ne pas marquer automatiquement les notifications comme lues** dans le `NotificationListener` — laisser l'utilisateur les marquer manuellement depuis la page notifications
-- **Navigation mobile responsive** : Ajouter un menu hamburger pour les utilisateurs sur mobile (la nav actuelle déborde sur petit écran)
-- **Bouton "Retour" cohérent** dans l'inbox sur mobile
-
-## 4. Messagerie
-
-- **Rafraîchir la liste des conversations** après envoi d'un message (actuellement la liste ne se met pas à jour en temps réel)
-- **Scroll automatique** vers le bas quand un nouveau message arrive dans l'inbox
-- **Indicateur "en train d'écrire"** (optionnel, amélioration UX)
-- **Message vide impossible** : Désactiver le bouton envoyer quand le champ est vide (déjà fait côté admin, manque côté inbox)
-
-## 5. Admin
-
-- **Statistiques dashboard** : Ajouter un aperçu sur la page admin — nombre de profils, nombre d'utilisateurs réels, nombre de messages, nombre de notifications envoyées
-- **Recherche/filtre dans la liste des profils admin** quand il y en a beaucoup
-- **Confirmer avant suppression** d'un profil (dialogue de confirmation)
-
-## 6. Landing Page et SEO
-
-- **Meta tags** : Ajouter title, description, Open Graph pour le partage sur les réseaux sociaux
-- **Polices Google Fonts** : Charger Playfair Display correctement (actuellement référencé en CSS inline mais pas importé — risque de fallback)
-- **Liens footer fonctionnels** : Les liens Conditions, Confidentialité, Contact pointent vers `#` — créer au moins des pages statiques basiques
-- **Favicon** personnalisé au lieu du défaut Vite
-
-## 7. Performance et Qualité
-
-- **Lazy loading des routes** : Utiliser `React.lazy` + `Suspense` pour les pages Admin, Inbox, etc.
-- **Limiter les requêtes** : La page Profiles charge TOUS les profils sans pagination — ajouter une pagination ou un infinite scroll
-- **Images optimisées** : Ajouter `loading="lazy"` sur les images de profil dans la grille
-
-## 8. Sécurité additionnelle
-
-- **AntiScreenshot** : Le composant blur-on-focus est très agressif (blur quand on change d'onglet) et dégrade l'UX sans vraie protection. Envisager de le rendre configurable ou de le retirer
-- **Validation côté serveur** des données de profil (longueur du nom, âge valide, etc.) via une fonction de validation trigger
+Idées concrètes à ajouter à RencontreDeLuxe pour transformer les visiteurs en abonnés payants. Classées par impact attendu vs effort.
 
 ---
 
-## Résumé des priorités
+## 1. Friction stratégique sur les actions clés (impact très élevé)
 
-| Priorité | Modification | Impact |
-|----------|-------------|--------|
-| Critique | Trigger auto-création profil à l'inscription | Sans ça, les vrais users n'apparaissent pas dans la messagerie admin |
-| Critique | Page réinitialisation mot de passe | Fonctionnalité de base manquante |
-| Haute | Page "Mon Profil" éditable | Les users ne peuvent pas personnaliser leur profil |
-| Haute | RLS update pour propre profil | Sécurité |
-| Haute | Navbar partagée + responsive mobile | UX dégradée sur mobile |
-| Haute | Page historique notifications | Les notifs disparaissent après le toast |
-| Moyenne | Dashboard stats admin | Visibilité pour l'admin |
-| Moyenne | Pagination profils | Performance |
-| Moyenne | Confirmation suppression | Prévention d'erreur |
-| Basse | Meta tags / SEO / favicon | Présence en ligne |
-| Basse | Lazy loading routes | Performance |
+Aujourd'hui un utilisateur connecté peut liker et envoyer des messages librement. C'est le plus gros frein à la conversion.
+
+- **Quota gratuit visible** : 3 messages / 5 likes offerts, puis paywall ("Vous avez utilisé 3/3 messages gratuits — passez Premium").
+- **Messages flous côté destinataire non abonné** : il voit qu'il a reçu un message, mais le contenu est flouté avec CTA "Débloquez vos messages".
+- **"Voir qui m'a liké"** réservé aux abonnés Premium / VIP (page existante mais teasée avec compteur : "3 personnes vous ont liké cette semaine").
+- **Filtres avancés** (ville, âge, intérêts) verrouillés pour le plan gratuit.
+
+## 2. Preuve sociale et urgence (impact élevé, effort faible)
+
+- **Bandeau d'activité en direct** sur le hero et /profiles : "Aïcha vient de rejoindre Premium", "12 nouveaux profils VIP cette semaine" (rotation toutes les 5s).
+- **Compteur "X membres en ligne maintenant"** dans la navbar.
+- **Badge "Vu récemment"** sur les profils débloqués pour donner un sentiment de vivacité.
+- **Témoignages / success stories** sur la landing (2–3 cartes avec photo floutée + prénom + ville).
+- **Offre limitée** : bandeau "−30% sur Premium pendant 48h" avec compte à rebours pour les nouveaux inscrits.
+
+## 3. Onboarding orienté conversion (impact élevé)
+
+- **Écran de bienvenue après inscription** présentant immédiatement les 3 plans avec un focus sur Premium.
+- **Email de bienvenue** (via edge function) listant ce qui est verrouillé + CTA Wave.
+- **Barre de progression du profil** ("Profil complété à 60% — devenez VIP pour être mis en avant").
+- **Suggestion de matchs premium** dès la première connexion : 3 profils ultra qualifiés visibles flous = "Débloquez pour découvrir".
+
+## 4. Page Abonnement enrichie (impact moyen, effort faible)
+
+- **Tableau comparatif détaillé** Découverte / Premium / VIP (likes, messages, filtres, mise en avant, etc.).
+- **FAQ paiement** (Wave, sécurité, annulation, remboursement).
+- **Garantie satisfait** : "7 jours pour changer d'avis".
+- **Témoignage encart** sous chaque plan ("Marie, Premium depuis 3 mois — 12 matchs").
+- **Badge "Le plus choisi"** déjà sur Premium → ajouter "Économie de X%" sur l'annuel (si on introduit un cycle annuel).
+
+## 5. Mécaniques d'engagement payantes (impact moyen)
+
+- **Boost de profil** : achat unique pour apparaître en haut pendant 24h (visible sur la carte profil).
+- **Super Like** : 1 par jour gratuit, pack de 10 payant ou inclus VIP.
+- **Lecture confirmée** des messages réservée aux abonnés.
+- **Mode invisible / navigation anonyme** réservé VIP.
+- **Cadeaux virtuels** (rose, diamant) à offrir pendant un chat.
+
+## 6. Notifications de relance (impact moyen)
+
+- **Notif "Quelqu'un vous a liké"** envoyée à l'utilisateur gratuit → CTA pour découvrir qui (paywall).
+- **Notif "Match potentiel détecté"** basée sur intérêts communs → réservé Premium.
+- **Email de réactivation** après 7 jours d'inactivité avec offre.
+- **Push toast** au 3e message envoyé : "Vous êtes populaire — passez Premium pour répondre sans limite".
+
+## 7. Gamification (impact moyen, effort plus élevé)
+
+- **Niveau de profil** (Bronze / Argent / Or) selon complétude + activité, débloqué à fond uniquement avec abonnement.
+- **Défis hebdomadaires** ("Likez 10 profils cette semaine pour gagner un Super Like").
+- **Programme parrainage** : 1 mois Premium offert pour chaque ami inscrit + abonné.
+
+## 8. Confiance et premium feel (impact moyen)
+
+- **Page "Vérification d'identité"** (mise en avant du badge vérifié déjà existant) — réservé Premium/VIP.
+- **Concierge VIP** : formulaire de demande personnalisée visible uniquement pour VIP.
+- **Événements privés** : page /evenements listant des soirées exclusives, accessible aux abonnés.
 
 ---
 
-Souhaitez-vous que j'implémente tout d'un coup, ou voulez-vous prioriser certains points ?
+## Détails techniques
 
+- Quotas : table `usage_limits (user_id, action, count, period_start)` avec RPC `check_and_increment(action)` côté Supabase. RLS user_id = auth.uid().
+- Tier abonné : table `subscriptions (user_id, plan, status, current_period_end)`, mise à jour manuelle par admin (Wave étant externe) + RPC `is_subscribed(user_id, min_plan)` security definer.
+- Paywall composant `<PaywallGate plan="premium">` réutilisable autour des actions sensibles (like > quota, envoi message, filtres).
+- Bandeau d'activité : table `activity_feed` + Realtime, ou fake côté client (rotation d'un tableau prédéfini) pour démarrer.
+- Compte à rebours d'offre : stocké en localStorage à la première visite (48h fixes).
+- Boost / Super Like : champs `boosted_until`, `super_likes_remaining` sur `profiles`.
+- Programme parrainage : code unique sur `profiles.referral_code`, table `referrals`.
+
+---
+
+## Recommandation de priorisation
+
+| Priorité | Action | Pourquoi |
+|----------|--------|----------|
+| Très haute | Quotas messages + likes avec paywall | Lève le frein principal à la monétisation |
+| Très haute | "Voir qui m'a liké" verrouillé + teaser compteur | Curiosité = premier déclencheur d'achat |
+| Haute | Bandeau activité + compteur membres en ligne | Crée la sensation de plateforme vivante |
+| Haute | Onboarding écran abonnement + email bienvenue | Capte l'utilisateur au moment le plus chaud |
+| Haute | Tableau comparatif + FAQ sur la page tarifs | Lève les dernières objections |
+| Moyenne | Boost / Super Like / Mode invisible | Revenus additionnels après acquisition |
+| Moyenne | Notifs de relance et email réactivation | Récupère les utilisateurs dormants |
+| Moyenne | Gamification (niveaux, défis) | Engagement long terme |
+| Basse | Parrainage / Concierge / Événements | Acquisition virale + premium feel |
+
+---
+
+Souhaitez-vous que je parte sur le **Top 3 très haute priorité** (quotas + paywall, "qui m'a liké" verrouillé, bandeau d'activité) ou que je vous laisse choisir un sous-ensemble précis ?

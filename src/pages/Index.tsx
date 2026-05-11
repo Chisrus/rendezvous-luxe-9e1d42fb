@@ -1,5 +1,6 @@
 import { Shield, Eye, Heart, Check, Crown, Star, Diamond } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ActivityBanner from "@/components/ActivityBanner";
 
 const Index = () => {
   return (
@@ -42,6 +43,9 @@ const Index = () => {
             </Button>
           </a>
           <p className="mt-4 text-sm text-muted-foreground">Sur invitation ou candidature • 100% confidentiel</p>
+          <div className="mt-8 flex justify-center">
+            <ActivityBanner />
+          </div>
         </div>
       </section>
 

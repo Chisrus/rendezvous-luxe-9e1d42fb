@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Users, MessageCircle, Bell, ArrowLeft } from "lucide-react";
+import { Menu, Users, MessageCircle, Bell, ArrowLeft, Crown } from "lucide-react";
 
 const adminRoutes = [
   { path: "/admin", label: "Gestion des Profils", icon: Users },
   { path: "/admin-chat", label: "Messagerie Admin", icon: MessageCircle },
   { path: "/admin-notifications", label: "Notifications Push", icon: Bell },
+  { path: "/admin-subscriptions", label: "Abonnements", icon: Crown },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
