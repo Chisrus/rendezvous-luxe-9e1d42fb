@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, MapPin, Heart, MessageCircle, BadgeCheck } from "lucide-react";
+import { Crown, MapPin, Heart, MessageCircle, BadgeCheck, Lock, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,40 @@ interface Profile {
 }
 
 const PAGE_SIZE = 12;
+
+const FIRST_NAMES_F = ["Aïcha", "Sophie", "Mariam", "Léa", "Fatou", "Camille", "Inès", "Awa", "Chloé", "Naomi", "Sara", "Élodie", "Yasmine", "Clara", "Aminata", "Julie", "Maya", "Anna", "Khadija", "Nadia"];
+const FIRST_NAMES_M = ["Karim", "Lucas", "Yannick", "Hugo", "Ibrahim", "Samuel", "Mehdi", "Antoine", "Adama", "Théo", "Arthur", "Malick", "Nathan", "Cédric", "Ousmane"];
+const CITIES = ["Abidjan", "Dakar", "Paris", "Cotonou", "Lomé", "Bamako", "Marseille", "Lyon", "Bruxelles", "Genève", "Yaoundé", "Casablanca"];
+
+interface LockedProfile {
+  id: string;
+  name: string;
+  age: number;
+  city: string;
+  is_vip: boolean;
+}
+
+const LOCKED_TOTAL = 48;
+const seededRandom = (seed: number) => {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+const buildLockedProfiles = (): LockedProfile[] => {
+  return Array.from({ length: LOCKED_TOTAL }, (_, i) => {
+    const r = seededRandom(i + 1);
+    const isF = r > 0.4;
+    const pool = isF ? FIRST_NAMES_F : FIRST_NAMES_M;
+    return {
+      id: `locked-${i}`,
+      name: pool[Math.floor(seededRandom(i + 7) * pool.length)],
+      age: 22 + Math.floor(seededRandom(i + 13) * 22),
+      city: CITIES[Math.floor(seededRandom(i + 21) * CITIES.length)],
+      is_vip: seededRandom(i + 33) > 0.7,
+    };
+  });
+};
+const LOCKED_PROFILES = buildLockedProfiles();
+const TOTAL_DISPLAY = "12 482";
 
 const Profiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -162,6 +196,84 @@ const Profiles = () => {
                 </Button>
               </div>
             )}
+
+            {/* Locked teaser profiles */}
+            <div className="mt-16">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <Sparkles className="w-6 h-6 text-primary" />
+                    Plus de <span className="text-primary">{TOTAL_DISPLAY}</span> profils exclusifs
+                  </h2>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Débloquez l'accès complet en souscrivant à un abonnement.
+                  </p>
+                </div>
+                <Button className="rounded-full bg-primary text-primary-foreground self-start"
+                  onClick={() => navigate("/#pricing")}>
+                  <Crown className="w-4 h-4 mr-2" /> Voir les abonnements
+                </Button>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {LOCKED_PROFILES.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => navigate("/#pricing")}
+                    className="group relative bg-card border border-border/50 rounded-2xl overflow-hidden text-left hover:border-primary/40 transition-all"
+                    aria-label="Profil verrouillé — abonnez-vous pour découvrir"
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden">
+                      {/* Blurred placeholder visual */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.35), transparent 60%), radial-gradient(circle at 70% 70%, hsl(var(--primary) / 0.25), transparent 65%), hsl(var(--secondary))`,
+                          filter: "blur(18px)",
+                          transform: "scale(1.15)",
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-background/40" />
+                      {p.is_vip && (
+                        <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground z-10">
+                          <Crown className="w-3 h-3 mr-1" /> VIP
+                        </Badge>
+                      )}
+                      {/* Lock overlay */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10">
+                        <div className="w-14 h-14 rounded-full bg-background/70 backdrop-blur-sm border border-primary/40 flex items-center justify-center">
+                          <Lock className="w-6 h-6 text-primary" />
+                        </div>
+                        <span className="text-xs uppercase tracking-widest text-foreground/80 font-medium">
+                          Profil privé
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-lg font-semibold text-foreground blur-sm select-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        {p.name}, {p.age} ans
+                      </h3>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1 blur-[3px] select-none">
+                        <MapPin className="w-3 h-3" /> {p.city}
+                      </p>
+                      <div className="mt-4 text-sm text-primary flex items-center gap-1 font-medium">
+                        <Crown className="w-4 h-4" /> Souscrire pour découvrir
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-center mt-10">
+                <p className="text-muted-foreground text-sm mb-4">
+                  Et bien d'autres encore... Accédez à la totalité de notre communauté privée.
+                </p>
+                <Button size="lg" className="rounded-full bg-primary text-primary-foreground"
+                  onClick={() => navigate("/#pricing")}>
+                  <Crown className="w-5 h-5 mr-2" /> Débloquer l'accès complet
+                </Button>
+              </div>
+            </div>
           </>
         )}
       </div>

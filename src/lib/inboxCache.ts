@@ -41,7 +41,25 @@ const cache: CacheShape = {
   selectedProfile: null,
 };
 
-const TTL = 60_000; // 60s freshness window
+const DEFAULT_TTL_CONVERSATIONS = 60; // seconds
+const DEFAULT_TTL_MESSAGES = 60; // seconds
+
+const readTtl = (key: string, fallback: number): number => {
+  if (typeof window === "undefined") return fallback * 1000;
+  const raw = window.localStorage.getItem(key);
+  if (!raw) return fallback * 1000;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return fallback * 1000;
+  return Math.min(n, 60 * 60) * 1000; // cap 1h
+};
+
+const ttlConversations = () => readTtl("cache_ttl_conversations", DEFAULT_TTL_CONVERSATIONS);
+const ttlMessages = () => readTtl("cache_ttl_messages", DEFAULT_TTL_MESSAGES);
+
+export const cacheTtlDefaults = {
+  conversations: DEFAULT_TTL_CONVERSATIONS,
+  messages: DEFAULT_TTL_MESSAGES,
+};
 
 const ensureUser = (userId: string) => {
   if (cache.userId !== userId) {
@@ -56,8 +74,10 @@ const ensureUser = (userId: string) => {
 };
 
 export const inboxCache = {
-  isFresh(at: number) {
-    return at > 0 && Date.now() - at < TTL;
+  isFresh(at: number, kind: "conversations" | "messages" = "conversations") {
+    const ttl = kind === "messages" ? ttlMessages() : ttlConversations();
+    if (ttl === 0) return false;
+    return at > 0 && Date.now() - at < ttl;
   },
   getProfiles(userId: string) {
     ensureUser(userId);
@@ -70,7 +90,7 @@ export const inboxCache = {
   },
   getConversations(userId: string) {
     ensureUser(userId);
-    return { data: cache.conversations, fresh: this.isFresh(cache.conversationsAt) };
+    return { data: cache.conversations, fresh: this.isFresh(cache.conversationsAt, "conversations") };
   },
   setConversations(userId: string, data: Conversation[]) {
     ensureUser(userId);
@@ -81,7 +101,7 @@ export const inboxCache = {
     ensureUser(userId);
     const entry = cache.messagesByProfile[profileId];
     if (!entry) return { data: null as Message[] | null, fresh: false };
-    return { data: entry.messages, fresh: this.isFresh(entry.at) };
+    return { data: entry.messages, fresh: this.isFresh(entry.at, "messages") };
   },
   setMessages(userId: string, profileId: string, messages: Message[]) {
     ensureUser(userId);

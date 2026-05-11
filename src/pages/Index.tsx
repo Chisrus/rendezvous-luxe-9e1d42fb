@@ -73,7 +73,7 @@ const Index = () => {
       </section>
 
       {/* Tarifs */}
-      <section className="py-24 px-6 bg-secondary/30">
+      <section id="pricing" className="py-24 px-6 bg-secondary/30">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
             Votre <span className="text-primary">Abonnement</span>
