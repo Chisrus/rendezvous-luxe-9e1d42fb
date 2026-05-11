@@ -15,6 +15,7 @@ const ProfileEdit = lazy(() => import("./pages/ProfileEdit"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminChat = lazy(() => import("./pages/AdminChat"));
 const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
+const AdminSubscriptions = lazy(() => import("./pages/AdminSubscriptions"));
 const Inbox = lazy(() => import("./pages/Inbox"));
 const Matches = lazy(() => import("./pages/Matches"));
 const Admirers = lazy(() => import("./pages/Admirers"));
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin-chat" element={<AdminChat />} />
               <Route path="/admin-notifications" element={<AdminNotifications />} />
+              <Route path="/admin-subscriptions" element={<AdminSubscriptions />} />
               <Route path="/inbox" element={<Inbox />} />
               <Route path="/matches" element={<Matches />} />
               <Route path="/admirers" element={<Admirers />} />
