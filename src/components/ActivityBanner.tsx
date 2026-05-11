@@ -29,7 +29,7 @@ const ActivityBanner = () => {
         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
       </span>
       <Sparkles className="w-3.5 h-3.5 text-primary" />
-      <span key={idx} className="text-foreground/90 animate-fade-in">
+      <span key={idx} className="text-foreground/90 transition-opacity">
         {MESSAGES[idx]}
       </span>
     </div>
