@@ -7,6 +7,10 @@ import { ArrowLeft, Send, MessageCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
 import { inboxCache } from "@/lib/inboxCache";
+import { useSubscription } from "@/hooks/useSubscription";
+import PaywallModal from "@/components/PaywallModal";
+
+const FREE_DAILY_MESSAGES = 3;
 
 interface Message {
   id: string;
@@ -27,6 +31,7 @@ interface Profile {
 
 const Inbox = () => {
   const { user, loading } = useAuth();
+  const { isFree } = useSubscription();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialUserId = user?.id ?? "";
@@ -43,6 +48,8 @@ const Inbox = () => {
     return inboxCache.getMessages(initialUserId, sel.id).data ?? [];
   });
   const [newMessage, setNewMessage] = useState("");
+  const [messagesToday, setMessagesToday] = useState(0);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [profiles, setProfiles] = useState<Record<string, Profile>>(
     () => (initialUserId ? inboxCache.getProfiles(initialUserId).data : {})
   );
@@ -66,6 +73,17 @@ const Inbox = () => {
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [user, loading, navigate]);
+
+  // Count messages sent today
+  useEffect(() => {
+    if (!user) return;
+    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    supabase.from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("sender_id", user.id)
+      .gte("created_at", startOfDay.toISOString())
+      .then(({ count }) => setMessagesToday(count ?? 0));
+  }, [user]);
 
   // Auto-select profile from query params
   useEffect(() => {
@@ -225,6 +243,11 @@ const Inbox = () => {
   const sendMessage = async () => {
     if (!newMessage.trim() || !user || !selectedProfile) return;
 
+    if (isFree && messagesToday >= FREE_DAILY_MESSAGES) {
+      setPaywallOpen(true);
+      return;
+    }
+
     const content = newMessage.trim();
     setNewMessage("");
     const { data: inserted } = await supabase.from("messages").insert({
@@ -237,6 +260,7 @@ const Inbox = () => {
 
     // Update conversation list locally instead of refetching
     if (inserted) {
+      setMessagesToday((c) => c + 1);
       setConversations((prev) => {
         const others = prev.filter((c) => c.profile.id !== selectedProfile.id);
         const existing = prev.find((c) => c.profile.id === selectedProfile.id);
@@ -263,6 +287,12 @@ const Inbox = () => {
   return (
     <div className="min-h-screen bg-background">
       <UserNavbar />
+      <PaywallModal
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        title="Limite de messages atteinte"
+        description={`Vous avez envoyé vos ${FREE_DAILY_MESSAGES} messages gratuits du jour. Passez Premium pour discuter sans limite.`}
+      />
       <div className="pt-20 px-4 md:px-6 max-w-4xl mx-auto pb-6">
         {!selectedProfile ? (
           <>
