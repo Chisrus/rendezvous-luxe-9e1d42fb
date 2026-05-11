@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MessageCircle, Bell, LogOut, Shield, Menu, User, Home, Heart, Settings as SettingsIcon } from "lucide-react";
+import { MessageCircle, Bell, LogOut, Shield, Menu, User, Home, Heart, Settings as SettingsIcon, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import OnlineCounter from "@/components/OnlineCounter";
 
 const UserNavbar = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -20,6 +21,7 @@ const UserNavbar = () => {
   const navItems = [
     { path: "/profiles", label: "Profils", icon: Home },
     { path: "/matches", label: "Matchs", icon: Heart },
+    { path: "/admirers", label: "Admirateurs", icon: Sparkles },
     { path: "/inbox", label: "Messages", icon: MessageCircle, badge: unreadMsgs },
     { path: "/notifications", label: "Notifications", icon: Bell, badge: unreadNotifs },
     { path: "/profile/edit", label: "Mon Profil", icon: User },
@@ -33,6 +35,7 @@ const UserNavbar = () => {
           <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
           <span className="text-foreground font-light">DeLuxe</span>
         </a>
+        <OnlineCounter />
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2">
