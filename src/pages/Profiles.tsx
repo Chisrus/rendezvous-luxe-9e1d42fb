@@ -7,6 +7,10 @@ import { Crown, MapPin, Heart, MessageCircle, BadgeCheck, Lock, Sparkles } from 
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import PaywallModal from "@/components/PaywallModal";
+
+const FREE_DAILY_LIKES = 5;
 
 interface Profile {
   id: string;
@@ -63,7 +67,10 @@ const Profiles = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [likesToday, setLikesToday] = useState(0);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const { user, loading } = useAuth();
+  const { isFree } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -80,8 +87,12 @@ const Profiles = () => {
 
   const loadLikes = async () => {
     if (!user) return;
-    const { data } = await supabase.from("likes").select("liked_profile_id").eq("liker_user_id", user.id);
+    const { data } = await supabase.from("likes").select("liked_profile_id, created_at").eq("liker_user_id", user.id);
     if (data) setLikedIds(new Set(data.map((l: any) => l.liked_profile_id)));
+    if (data) {
+      const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+      setLikesToday(data.filter((l: any) => new Date(l.created_at) >= startOfDay).length);
+    }
   };
 
   const toggleLike = async (profileId: string) => {
@@ -90,10 +101,16 @@ const Profiles = () => {
     if (isLiked) {
       await supabase.from("likes").delete().eq("liker_user_id", user.id).eq("liked_profile_id", profileId);
       setLikedIds(prev => { const n = new Set(prev); n.delete(profileId); return n; });
+      setLikesToday((c) => Math.max(0, c - 1));
     } else {
+      if (isFree && likesToday >= FREE_DAILY_LIKES) {
+        setPaywallOpen(true);
+        return;
+      }
       const { error } = await supabase.from("likes").insert({ liker_user_id: user.id, liked_profile_id: profileId });
       if (!error) {
         setLikedIds(prev => new Set(prev).add(profileId));
+        setLikesToday((c) => c + 1);
         toast({ title: "Like envoyé", description: "Si c'est mutuel, vous serez notifié·e ✨" });
       }
     }
@@ -128,7 +145,26 @@ const Profiles = () => {
         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
           Nos <span className="text-primary">Membres</span>
         </h1>
-        <p className="text-muted-foreground mb-10">Découvrez des profils d'exception.</p>
+        <p className="text-muted-foreground mb-4">Découvrez des profils d'exception.</p>
+
+        {isFree && (
+          <div className="mb-8 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border/50 text-xs">
+            <Heart className="w-3.5 h-3.5 text-primary" />
+            <span className="text-muted-foreground">
+              Likes du jour : <span className="text-foreground font-medium">{likesToday}/{FREE_DAILY_LIKES}</span>
+            </span>
+            <button onClick={() => navigate("/#pricing")} className="text-primary font-medium hover:underline">
+              Illimité avec Premium
+            </button>
+          </div>
+        )}
+
+        <PaywallModal
+          open={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          title="Limite de likes atteinte"
+          description={`Vous avez utilisé vos ${FREE_DAILY_LIKES} likes gratuits du jour. Passez Premium pour des likes illimités.`}
+        />
 
         {profiles.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
