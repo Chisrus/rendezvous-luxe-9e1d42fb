@@ -116,6 +116,7 @@ export type Database = {
           is_verified: boolean | null
           is_vip: boolean | null
           name: string
+          orientation: string | null
           photo_url: string | null
           updated_at: string
         }
@@ -131,6 +132,7 @@ export type Database = {
           is_verified?: boolean | null
           is_vip?: boolean | null
           name: string
+          orientation?: string | null
           photo_url?: string | null
           updated_at?: string
         }
@@ -146,6 +148,7 @@ export type Database = {
           is_verified?: boolean | null
           is_vip?: boolean | null
           name?: string
+          orientation?: string | null
           photo_url?: string | null
           updated_at?: string
         }
