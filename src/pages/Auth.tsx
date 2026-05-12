@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Diamond, ArrowRight, ArrowLeft, Check, Mars, Venus, Transgender, Heart, Sparkles } from "lucide-react";
+import { Diamond, ArrowRight, ArrowLeft, Check, User as UserIcon, UserRound, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -158,9 +158,9 @@ const Auth = () => {
           canNext={!!gender}
         >
           <div className="grid grid-cols-1 gap-3">
-            <ChoiceCard icon={<Mars className="w-6 h-6" />} label="Homme" selected={gender === "homme"} onClick={() => setGender("homme")} />
-            <ChoiceCard icon={<Venus className="w-6 h-6" />} label="Femme" selected={gender === "femme"} onClick={() => setGender("femme")} />
-            <ChoiceCard icon={<Transgender className="w-6 h-6" />} label="Non-binaire / Autre" selected={gender === "non-binaire"} onClick={() => setGender("non-binaire")} />
+            <ChoiceCard icon={<UserIcon className="w-6 h-6" />} label="Homme" selected={gender === "homme"} onClick={() => setGender("homme")} />
+            <ChoiceCard icon={<UserRound className="w-6 h-6" />} label="Femme" selected={gender === "femme"} onClick={() => setGender("femme")} />
+            <ChoiceCard icon={<Users className="w-6 h-6" />} label="Non-binaire / Autre" selected={gender === "non-binaire"} onClick={() => setGender("non-binaire")} />
           </div>
         </Step>
       )}
