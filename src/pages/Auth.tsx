@@ -324,4 +324,49 @@ const ChoiceCard = ({
   </button>
 );
 
+const ValidationHint = ({
+  ok, empty, okMsg, errorMsg, hint,
+}: { ok: boolean; empty: boolean; okMsg?: string; errorMsg?: string; hint?: string }) => {
+  if (empty) {
+    return hint ? <p className="text-xs text-muted-foreground mt-1.5">{hint}</p> : null;
+  }
+  if (ok) {
+    return (
+      <p className="text-xs text-primary mt-1.5 inline-flex items-center gap-1">
+        <Check className="w-3 h-3" /> {okMsg ?? "Valide"}
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-destructive mt-1.5 inline-flex items-center gap-1">
+      <AlertCircle className="w-3 h-3" /> {errorMsg ?? "Invalide"}
+    </p>
+  );
+};
+
+const PasswordStrength = ({ value }: { value: string }) => {
+  const len = value.length;
+  const hasNum = /\d/.test(value);
+  const hasUp = /[A-Z]/.test(value);
+  const score = (len >= 6 ? 1 : 0) + (len >= 10 ? 1 : 0) + (hasNum ? 1 : 0) + (hasUp ? 1 : 0);
+  const labels = ["Trop court", "Faible", "Correct", "Bon", "Excellent"];
+  const colors = ["bg-destructive", "bg-destructive", "bg-yellow-500", "bg-primary", "bg-primary"];
+  if (len === 0) {
+    return <p className="text-xs text-muted-foreground mt-1.5">6 caractères minimum</p>;
+  }
+  return (
+    <div className="mt-1.5 space-y-1">
+      <div className="flex gap-1">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < score ? colors[score] : "bg-border"}`} />
+        ))}
+      </div>
+      <p className={`text-xs inline-flex items-center gap-1 ${len < 6 ? "text-destructive" : score >= 3 ? "text-primary" : "text-muted-foreground"}`}>
+        {len >= 6 ? <Check className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+        {labels[score]}
+      </p>
+    </div>
+  );
+};
+
 export default Auth;
