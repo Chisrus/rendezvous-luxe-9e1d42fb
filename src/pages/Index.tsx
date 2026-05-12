@@ -1,8 +1,13 @@
 import { Shield, Eye, Heart, Check, Crown, Star, Diamond } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ActivityBanner from "@/components/ActivityBanner";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user } = useAuth();
+  const ctaHref = user ? "/profiles" : "/auth";
+  const ctaShort = user ? "Mon espace" : "S'inscrire";
+  const ctaHero = user ? "Accéder à mon espace" : "Rejoindre le Cercle";
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -12,9 +17,9 @@ const Index = () => {
             <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
             <span className="text-foreground font-light">DeLuxe</span>
           </span>
-          <a href="/auth">
+          <a href={ctaHref}>
             <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-6">
-              S'inscrire
+              {ctaShort}
             </Button>
           </a>
         </div>
@@ -37,12 +42,14 @@ const Index = () => {
             Un cercle privé où discrétion, élégance et authenticité se rencontrent. 
             Chaque profil est vérifié, chaque connexion est unique.
           </p>
-          <a href="/auth">
+          <a href={ctaHref}>
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full px-10 py-6 text-base font-semibold tracking-wide shadow-lg shadow-primary/20">
-              Rejoindre le Cercle
+              {ctaHero}
             </Button>
           </a>
-          <p className="mt-4 text-sm text-muted-foreground">Sur invitation ou candidature • 100% confidentiel</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            {user ? "Bon retour parmi nous" : "Sur invitation ou candidature • 100% confidentiel"}
+          </p>
           <div className="mt-8 flex justify-center">
             <ActivityBanner />
           </div>
