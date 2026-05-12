@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Diamond, ArrowRight, ArrowLeft, Check, User as UserIcon, UserRound, Users } from "lucide-react";
+import { Diamond, ArrowRight, ArrowLeft, Check, User as UserIcon, UserRound, Users, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -146,6 +146,13 @@ const Auth = () => {
           canNext={name.trim().length >= 2}
         >
           <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Prénom" className="bg-background border-border/50 text-lg py-6 text-center" />
+          <ValidationHint
+            ok={name.trim().length >= 2}
+            empty={name.length === 0}
+            okMsg="Parfait"
+            errorMsg="Au moins 2 caractères"
+            hint="Votre prénom (visible des autres membres)"
+          />
         </Step>
       )}
 
@@ -162,6 +169,7 @@ const Auth = () => {
             <ChoiceCard icon={<UserRound className="w-6 h-6" />} label="Femme" selected={gender === "femme"} onClick={() => setGender("femme")} />
             <ChoiceCard icon={<Users className="w-6 h-6" />} label="Non-binaire / Autre" selected={gender === "non-binaire"} onClick={() => setGender("non-binaire")} />
           </div>
+          <ValidationHint ok={!!gender} empty={!gender} okMsg="Sélection enregistrée" hint="Choisissez une option pour continuer" />
         </Step>
       )}
 
@@ -181,6 +189,7 @@ const Auth = () => {
             <ChoiceCard label="Trans" selected={orientation === "trans"} onClick={() => setOrientation("trans")} />
             <ChoiceCard label="Autre" selected={orientation === "autre"} onClick={() => setOrientation("autre")} />
           </div>
+          <ValidationHint ok={!!orientation} empty={!orientation} okMsg="Sélection enregistrée" hint="Choisissez une option pour continuer" />
         </Step>
       )}
 
@@ -191,10 +200,35 @@ const Auth = () => {
           onBack={() => setStep(3)}
           nextLabel={loading ? "Création..." : "Rejoindre le Cercle"}
           onNext={() => email && password.length >= 6 && handleSignup()}
-          canNext={!loading && /\S+@\S+\.\S+/.test(email) && password.length >= 6}
+          canNext={!loading && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length >= 6}
         >
-          <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" className="bg-background border-border/50" /></Field>
-          <Field label="Mot de passe"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="6 caractères minimum" minLength={6} className="bg-background border-border/50" /></Field>
+          <Field label="Email">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="votre@email.com"
+              className={`bg-background ${email.length === 0 ? "border-border/50" : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "border-primary/60" : "border-destructive/60"}`}
+            />
+            <ValidationHint
+              ok={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
+              empty={email.length === 0}
+              okMsg="Email valide"
+              errorMsg="Format email invalide"
+              hint="ex. nom@domaine.com"
+            />
+          </Field>
+          <Field label="Mot de passe">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="6 caractères minimum"
+              minLength={6}
+              className={`bg-background ${password.length === 0 ? "border-border/50" : password.length >= 6 ? "border-primary/60" : "border-destructive/60"}`}
+            />
+            <PasswordStrength value={password} />
+          </Field>
           <p className="text-xs text-muted-foreground text-center pt-2">
             En vous inscrivant, vous acceptez nos <a href="/terms" className="text-primary hover:underline">conditions</a>.
           </p>
