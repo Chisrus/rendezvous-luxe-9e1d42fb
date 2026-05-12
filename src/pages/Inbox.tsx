@@ -9,6 +9,7 @@ import UserNavbar from "@/components/UserNavbar";
 import { inboxCache } from "@/lib/inboxCache";
 import { useSubscription } from "@/hooks/useSubscription";
 import PaywallModal from "@/components/PaywallModal";
+import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
 
 const FREE_DAILY_MESSAGES = 3;
 
@@ -32,6 +33,7 @@ interface Profile {
 const Inbox = () => {
   const { user, loading } = useAuth();
   const { isFree } = useSubscription();
+  useRequireOnboarding();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialUserId = user?.id ?? "";
