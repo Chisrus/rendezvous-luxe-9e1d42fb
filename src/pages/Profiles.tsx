@@ -9,6 +9,7 @@ import UserNavbar from "@/components/UserNavbar";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
 import PaywallModal from "@/components/PaywallModal";
+import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
 
 const FREE_DAILY_LIKES = 5;
 
@@ -73,6 +74,7 @@ const Profiles = () => {
   const { isFree } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
+  useRequireOnboarding();
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
