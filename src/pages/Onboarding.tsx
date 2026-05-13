@@ -8,7 +8,7 @@ import { Camera, Diamond, Check, ArrowRight, ArrowLeft, Sparkles } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 
 const Onboarding = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, onboardingComplete, refreshOnboarding } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
@@ -19,16 +19,20 @@ const Onboarding = () => {
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
-  // Si profil déjà complet, on saute l'onboarding
+  // Redirection instantanée si le contexte sait déjà que c'est complet
+  useEffect(() => {
+    if (onboardingComplete === true) navigate("/profiles", { replace: true });
+  }, [onboardingComplete, navigate]);
+
+  // Pré-remplir si données partielles existantes
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("bio, photo_url").eq("created_by", user.id).maybeSingle()
       .then(({ data }) => {
-        if (data?.bio && data?.photo_url) navigate("/profiles", { replace: true });
         if (data?.photo_url) setPhotoUrl(data.photo_url);
         if (data?.bio) setBio(data.bio);
       });
-  }, [user, navigate]);
+  }, [user]);
 
   const bioValid = bio.trim().length >= 20;
   const photoValid = !!photoFile || !!photoUrl;
@@ -50,6 +54,7 @@ const Onboarding = () => {
         photo_url: newUrl,
       }).eq("created_by", user.id);
       if (error) throw error;
+      await refreshOnboarding();
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Votre profil est prêt." });
       navigate("/profiles", { replace: true });
     } catch (err: any) {
