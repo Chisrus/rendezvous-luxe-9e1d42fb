@@ -22,6 +22,18 @@ export const AuthContext = createContext<AuthContextType>({
 
 const ONB_KEY = (uid: string) => `rdl:onb:${uid}`;
 
+const clearOnbCache = (uid?: string | null) => {
+  try {
+    if (uid) localStorage.removeItem(ONB_KEY(uid));
+    else {
+      // Purge any stale onboarding cache (e.g. multi-account)
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("rdl:onb:"))
+        .forEach((k) => localStorage.removeItem(k));
+    }
+  } catch {}
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,6 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []); // Empty dependency array - run only once
 
   const signOut = async () => {
+    clearOnbCache(user?.id);
     await supabase.auth.signOut();
   };
 
@@ -124,6 +137,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setOnboardingComplete(done);
     try { localStorage.setItem(ONB_KEY(user.id), done ? "1" : "0"); } catch {}
   };
+
+  // Realtime invalidation: dès que la ligne profil de l'utilisateur change,
+  // on rafraîchit le statut d'onboarding (et donc le cache localStorage).
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`profile-onb-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles", filter: `created_by=eq.${user.id}` },
+        () => { refreshOnboarding(); }
+      )
+      .subscribe();
+    // Si une autre fenêtre/onglet vide le cache, on resynchronise
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === ONB_KEY(user.id)) refreshOnboarding();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener("storage", onStorage);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   return (
     <AuthContext.Provider value={{ user, loading, isAdmin, onboardingComplete, refreshOnboarding, signOut }}>
