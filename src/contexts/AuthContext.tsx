@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
+  onboardingComplete: boolean | null;
+  refreshOnboarding: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -13,13 +15,18 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isAdmin: false,
+  onboardingComplete: null,
+  refreshOnboarding: async () => {},
   signOut: async () => {},
 });
+
+const ONB_KEY = (uid: string) => `rdl:onb:${uid}`;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -40,15 +47,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    const checkOnboarding = async (userId: string): Promise<boolean> => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("bio, photo_url")
+          .eq("created_by", userId)
+          .maybeSingle();
+        return !!(data?.bio && data.bio.trim().length > 0 && data?.photo_url);
+      } catch {
+        return false;
+      }
+    };
+
     const processUser = async (currentUser: User | null) => {
       if (!mountedRef.current) return;
       setUser(currentUser);
 
       if (currentUser) {
+        // Hydrate from cache for instant client-side check (no flicker)
+        try {
+          const cached = localStorage.getItem(ONB_KEY(currentUser.id));
+          if (cached === "1" || cached === "0") {
+            setOnboardingComplete(cached === "1");
+          }
+        } catch {}
         const admin = await checkAdmin(currentUser.id);
         if (mountedRef.current) setIsAdmin(admin);
+        const done = await checkOnboarding(currentUser.id);
+        if (mountedRef.current) {
+          setOnboardingComplete(done);
+          try { localStorage.setItem(ONB_KEY(currentUser.id), done ? "1" : "0"); } catch {}
+        }
       } else {
         if (mountedRef.current) setIsAdmin(false);
+        if (mountedRef.current) setOnboardingComplete(null);
       }
 
       if (mountedRef.current) setLoading(false);
@@ -80,8 +113,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const refreshOnboarding = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("bio, photo_url")
+      .eq("created_by", user.id)
+      .maybeSingle();
+    const done = !!(data?.bio && data.bio.trim().length > 0 && data?.photo_url);
+    setOnboardingComplete(done);
+    try { localStorage.setItem(ONB_KEY(user.id), done ? "1" : "0"); } catch {}
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, onboardingComplete, refreshOnboarding, signOut }}>
       {children}
     </AuthContext.Provider>
   );
