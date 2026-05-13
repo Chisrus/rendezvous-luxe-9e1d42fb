@@ -26,5 +26,8 @@ export const useSubscription = () => {
 
   const isAtLeast = (min: Plan) => RANK[plan] >= RANK[min];
 
-  return { plan, loading, refresh, isAtLeast, isFree: plan === "free" };
+  // isFree ne doit être vrai qu'une fois le statut chargé,
+  // pour éviter d'afficher des UI "free" (paywall, badge limite, teaser)
+  // à un membre Premium pendant le chargement initial.
+  return { plan, loading, refresh, isAtLeast, isFree: !loading && plan === "free" };
 };
