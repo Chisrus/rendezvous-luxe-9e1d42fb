@@ -71,7 +71,7 @@ const Profiles = () => {
   const [likesToday, setLikesToday] = useState(0);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const { user, loading } = useAuth();
-  const { isFree } = useSubscription();
+  const { isFree, loading: subLoading, isAtLeast } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   useRequireOnboarding();
@@ -149,7 +149,7 @@ const Profiles = () => {
         </h1>
         <p className="text-muted-foreground mb-4">Découvrez des profils d'exception.</p>
 
-        {isFree && (
+        {!subLoading && isFree && (
           <div className="mb-8 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border/50 text-xs">
             <Heart className="w-3.5 h-3.5 text-primary" />
             <span className="text-muted-foreground">
@@ -235,7 +235,8 @@ const Profiles = () => {
               </div>
             )}
 
-            {/* Locked teaser profiles */}
+            {/* Locked teaser profiles — uniquement pour les comptes gratuits */}
+            {!subLoading && !isAtLeast("discovery") && (
             <div className="mt-16">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
                 <div>
@@ -312,6 +313,7 @@ const Profiles = () => {
                 </Button>
               </div>
             </div>
+            )}
           </>
         )}
       </div>
