@@ -32,7 +32,7 @@ interface Profile {
 
 const Inbox = () => {
   const { user, loading } = useAuth();
-  const { isFree } = useSubscription();
+  const { isFree, loading: subLoading } = useSubscription();
   useRequireOnboarding();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -245,6 +245,7 @@ const Inbox = () => {
   const sendMessage = async () => {
     if (!newMessage.trim() || !user || !selectedProfile) return;
 
+    if (subLoading) return; // évite un faux paywall pendant le chargement
     if (isFree && messagesToday >= FREE_DAILY_MESSAGES) {
       setPaywallOpen(true);
       return;
