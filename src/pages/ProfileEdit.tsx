@@ -11,7 +11,7 @@ import { Camera, Save } from "lucide-react";
 import UserNavbar from "@/components/UserNavbar";
 
 const ProfileEdit = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshOnboarding } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -84,6 +84,7 @@ const ProfileEdit = () => {
         .eq("created_by", user.id);
 
       if (error) throw error;
+      await refreshOnboarding();
       toast({ title: "Profil mis à jour !" });
       setPhotoUrl(newPhotoUrl);
       setPhotoFile(null);
