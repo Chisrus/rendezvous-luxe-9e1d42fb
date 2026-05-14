@@ -61,7 +61,7 @@ const UserNavbar = () => {
               <Shield className="w-4 h-4 mr-1" /> Admin
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={signOut} className="text-muted-foreground">
+          <Button size="sm" variant="ghost" onClick={signOut} className="text-muted-foreground" aria-label="Se déconnecter">
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
@@ -69,7 +69,7 @@ const UserNavbar = () => {
         {/* Mobile nav */}
         <div className="md:hidden flex items-center gap-2">
           {/* Quick badges */}
-          <Button size="sm" variant="ghost" onClick={() => navigate("/inbox")} className="relative p-2">
+          <Button size="sm" variant="ghost" onClick={() => navigate("/inbox")} className="relative p-2" aria-label={`Messages${unreadMsgs > 0 ? ` (${unreadMsgs} non lus)` : ""}`}>
             <MessageCircle className="w-5 h-5 text-muted-foreground" />
             {unreadMsgs > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold">
@@ -77,7 +77,7 @@ const UserNavbar = () => {
               </span>
             )}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate("/notifications")} className="relative p-2">
+          <Button size="sm" variant="ghost" onClick={() => navigate("/notifications")} className="relative p-2" aria-label={`Notifications${unreadNotifs > 0 ? ` (${unreadNotifs} non lues)` : ""}`}>
             <Bell className="w-5 h-5 text-muted-foreground" />
             {unreadNotifs > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold">
@@ -87,7 +87,7 @@ const UserNavbar = () => {
           </Button>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Ouvrir le menu">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>

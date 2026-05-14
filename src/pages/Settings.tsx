@@ -70,10 +70,11 @@ const Settings = () => {
 
         <div className="space-y-6 bg-card border border-border/50 rounded-2xl p-6">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label htmlFor="conv-ttl" className="block text-sm font-medium text-foreground mb-2">
               Cache des conversations (secondes)
             </label>
             <input
+              id="conv-ttl"
               type="number"
               min={0}
               max={3600}
@@ -85,10 +86,11 @@ const Settings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label htmlFor="msg-ttl" className="block text-sm font-medium text-foreground mb-2">
               Cache des messages (secondes)
             </label>
             <input
+              id="msg-ttl"
               type="number"
               min={0}
               max={3600}

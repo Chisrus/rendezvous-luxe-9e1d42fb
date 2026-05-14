@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -248,6 +248,7 @@ const Auth = () => {
 const Shell = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
     <div className="w-full max-w-md">
+      <h1 className="sr-only">Accès au cercle RencontreDeLuxe — {title}</h1>
       <div className="text-center mb-8">
         <a href="/" className="inline-block">
           <span className="text-2xl font-semibold tracking-wide">
@@ -265,12 +266,22 @@ const Shell = ({ title, children }: { title: string; children: React.ReactNode }
   </div>
 );
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-2">
-    <Label className="text-foreground">{label}</Label>
-    {children}
-  </div>
-);
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => {
+  const id = `field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id} className="text-foreground">{label}</Label>
+      {/* Inject id into the first input child for label association */}
+      {Array.isArray(children) ? children : <FieldChild id={id}>{children}</FieldChild>}
+    </div>
+  );
+};
+
+const FieldChild = ({ id, children }: { id: string; children: React.ReactNode }) => {
+  if (!children || typeof children !== "object" || !("props" in (children as any))) return <>{children}</>;
+  const child = children as React.ReactElement;
+  return React.cloneElement(child, { id: child.props.id || id });
+};
 
 const Step = ({
   title, subtitle, children, onBack, onNext, canNext, nextLabel,
@@ -286,7 +297,7 @@ const Step = ({
     <div className="space-y-4">{children}</div>
     <div className="flex gap-3 pt-2">
       {onBack && (
-        <Button type="button" variant="outline" onClick={onBack} className="rounded-full">
+        <Button type="button" variant="outline" onClick={onBack} className="rounded-full" aria-label="Étape précédente">
           <ArrowLeft className="w-4 h-4" />
         </Button>
       )}

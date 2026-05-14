@@ -112,7 +112,7 @@ const ProfileEdit = () => {
               {photoUrl || photoFile ? (
                 <img
                   src={photoFile ? URL.createObjectURL(photoFile) : photoUrl!}
-                  alt="Photo"
+                  alt={`Photo de profil de ${form.name || "membre"}`}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -135,31 +135,31 @@ const ProfileEdit = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-foreground">Nom *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="bg-background border-border/50" />
+              <Label htmlFor="pf-name" className="text-foreground">Nom *</Label>
+              <Input id="pf-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="bg-background border-border/50" />
             </div>
             <div className="space-y-2">
-              <Label className="text-foreground">Âge</Label>
-              <Input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} className="bg-background border-border/50" />
+              <Label htmlFor="pf-age" className="text-foreground">Âge</Label>
+              <Input id="pf-age" type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} className="bg-background border-border/50" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-foreground">Ville</Label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="bg-background border-border/50" />
+              <Label htmlFor="pf-city" className="text-foreground">Ville</Label>
+              <Input id="pf-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="bg-background border-border/50" />
             </div>
             <div className="space-y-2">
-              <Label className="text-foreground">Genre</Label>
-              <Input value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} placeholder="Homme, Femme..." className="bg-background border-border/50" />
+              <Label htmlFor="pf-gender" className="text-foreground">Genre</Label>
+              <Input id="pf-gender" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} placeholder="Homme, Femme..." className="bg-background border-border/50" />
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-foreground">Bio</Label>
-            <Textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="bg-background border-border/50" rows={3} />
+            <Label htmlFor="pf-bio" className="text-foreground">Bio</Label>
+            <Textarea id="pf-bio" value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="bg-background border-border/50" rows={3} />
           </div>
           <div className="space-y-2">
-            <Label className="text-foreground">Centres d'intérêt (séparés par des virgules)</Label>
-            <Input value={form.interests} onChange={(e) => setForm({ ...form, interests: e.target.value })} placeholder="Voyages, Gastronomie, Art..." className="bg-background border-border/50" />
+            <Label htmlFor="pf-interests" className="text-foreground">Centres d'intérêt (séparés par des virgules)</Label>
+            <Input id="pf-interests" value={form.interests} onChange={(e) => setForm({ ...form, interests: e.target.value })} placeholder="Voyages, Gastronomie, Art..." className="bg-background border-border/50" />
           </div>
 
           <Button type="submit" disabled={saving} className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold">
