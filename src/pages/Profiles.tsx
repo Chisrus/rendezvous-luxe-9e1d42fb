@@ -182,7 +182,7 @@ const Profiles = () => {
                 <div key={p.id} className="group bg-card border border-border/50 rounded-2xl overflow-hidden hover:border-primary/40 transition-all">
                   <div className="aspect-[3/4] bg-secondary relative overflow-hidden">
                     {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={p.photo_url} alt={`Photo de profil de ${p.name}${p.city ? `, ${p.city}` : ""}`} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-6xl font-light">
                         {p.name[0]}

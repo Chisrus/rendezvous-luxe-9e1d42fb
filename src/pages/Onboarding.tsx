@@ -100,15 +100,17 @@ const Onboarding = () => {
                   {photoFile || photoUrl ? (
                     <img
                       src={photoFile ? URL.createObjectURL(photoFile) : photoUrl!}
-                      alt="Photo"
+                      alt="Aperçu de votre photo de profil"
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <Camera className="w-10 h-10 text-muted-foreground group-hover:text-primary transition-colors" />
                   )}
                   <input
+                    id="onboarding-photo"
                     type="file"
                     accept="image/*"
+                    aria-label="Choisir une photo de profil"
                     className="hidden"
                     onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
                   />
@@ -138,7 +140,9 @@ const Onboarding = () => {
               </div>
 
               <div className="space-y-2">
+                <label htmlFor="onboarding-bio" className="sr-only">Votre bio</label>
                 <Textarea
+                  id="onboarding-bio"
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Passionné(e) de voyages, de gastronomie et de longues conversations..."
@@ -155,7 +159,7 @@ const Onboarding = () => {
               </div>
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => setStep(1)} className="rounded-full">
+                <Button type="button" variant="outline" onClick={() => setStep(1)} className="rounded-full" aria-label="Étape précédente">
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <Button

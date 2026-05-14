@@ -65,6 +65,7 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-md">
+        <h1 className="sr-only">Réinitialiser votre mot de passe</h1>
         <div className="text-center mb-10">
           <a href="/" className="inline-block">
             <span className="text-2xl font-semibold tracking-wide">
