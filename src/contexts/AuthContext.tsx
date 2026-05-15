@@ -61,12 +61,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkOnboarding = async (userId: string): Promise<boolean> => {
       try {
-        const { data } = await supabase
+        // Source autoritaire côté serveur (évite divergences cache/DB)
+        const { data, error } = await supabase.rpc("is_onboarding_complete", { _user_id: userId });
+        if (!error && typeof data === "boolean") return data;
+        const { data: row } = await supabase
           .from("profiles")
           .select("bio, photo_url")
           .eq("created_by", userId)
           .maybeSingle();
-        return !!(data?.bio && data.bio.trim().length > 0 && data?.photo_url);
+        return !!(row?.bio && row.bio.trim().length >= 20 && row?.photo_url);
       } catch {
         return false;
       }
@@ -128,12 +131,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshOnboarding = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("bio, photo_url")
-      .eq("created_by", user.id)
-      .maybeSingle();
-    const done = !!(data?.bio && data.bio.trim().length > 0 && data?.photo_url);
+    const { data, error } = await supabase.rpc("is_onboarding_complete", { _user_id: user.id });
+    let done: boolean;
+    if (!error && typeof data === "boolean") {
+      done = data;
+    } else {
+      const { data: row } = await supabase
+        .from("profiles")
+        .select("bio, photo_url")
+        .eq("created_by", user.id)
+        .maybeSingle();
+      done = !!(row?.bio && row.bio.trim().length >= 20 && row?.photo_url);
+    }
     setOnboardingComplete(done);
     try { localStorage.setItem(ONB_KEY(user.id), done ? "1" : "0"); } catch {}
   };

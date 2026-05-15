@@ -26,6 +26,22 @@ const Onboarding = () => {
     if (onboardingComplete === true) navigate("/profiles", { replace: true });
   }, [onboardingComplete, navigate]);
 
+  // Garde serveur autoritaire : vérifie via RPC si l'onboarding est déjà complet
+  // (évite la boucle si le cache local est obsolète après un refresh).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc("is_onboarding_complete", { _user_id: user.id });
+      if (cancelled || error) return;
+      if (data === true) {
+        await refreshOnboarding();
+        navigate("/profiles", { replace: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, navigate, refreshOnboarding]);
+
   // Pré-remplir si données partielles existantes
   useEffect(() => {
     if (!user) return;
