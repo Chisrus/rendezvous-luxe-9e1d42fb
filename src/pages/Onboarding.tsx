@@ -49,10 +49,29 @@ const Onboarding = () => {
         if (upErr) throw upErr;
         newUrl = supabase.storage.from("profile-photos").getPublicUrl(path).data.publicUrl;
       }
-      const { error } = await supabase.from("profiles").update({
+      const profilePayload = {
         bio: bio.trim(),
         photo_url: newUrl,
-      }).eq("created_by", user.id);
+      };
+
+      const { data: existingProfiles, error: existingError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("created_by", user.id)
+        .limit(1);
+
+      if (existingError) throw existingError;
+
+      const existingProfileId = existingProfiles?.[0]?.id;
+      const { error } = existingProfileId
+        ? await supabase.from("profiles").update(profilePayload).eq("id", existingProfileId)
+        : await supabase.from("profiles").insert({
+            id: user.id,
+            created_by: user.id,
+            name: user.user_metadata?.name?.trim() || user.email?.split("@")[0] || "Utilisateur",
+            ...profilePayload,
+          });
+
       if (error) throw error;
       await refreshOnboarding();
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Votre profil est prêt." });
