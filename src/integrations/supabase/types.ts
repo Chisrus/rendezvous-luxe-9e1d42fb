@@ -217,6 +217,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_onboarding_complete: { Args: { _user_id: string }; Returns: boolean }
       is_subscribed: {
         Args: { _min_plan: string; _user_id: string }
         Returns: boolean
