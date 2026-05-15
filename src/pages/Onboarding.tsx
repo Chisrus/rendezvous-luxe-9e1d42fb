@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { Camera, Diamond, Check, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,7 @@ const Onboarding = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
@@ -36,6 +38,8 @@ const Onboarding = () => {
 
   const bioValid = bio.trim().length >= 20;
   const photoValid = !!photoFile || !!photoUrl;
+  const completedSteps = (photoValid ? 1 : 0) + (bioValid ? 1 : 0);
+  const progressPct = Math.round((completedSteps / 2) * 100);
 
   const handleFinish = async () => {
     if (!user) return;
@@ -74,14 +78,35 @@ const Onboarding = () => {
 
       if (error) throw error;
       await refreshOnboarding();
+      setCompleted(true);
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Votre profil est prêt." });
-      navigate("/profiles", { replace: true });
+      setTimeout(() => navigate("/profiles", { replace: true }), 1600);
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     } finally { setSaving(false); }
   };
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
+
+  if (completed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md bg-card border border-primary/30 rounded-2xl p-10 text-center shadow-xl shadow-primary/10">
+          <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 border border-primary/40 flex items-center justify-center mb-5">
+            <Check className="w-8 h-8 text-primary" aria-hidden="true" />
+          </div>
+          <h1 className="text-2xl font-semibold text-foreground mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Profil complété
+          </h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            Votre photo et votre bio ont bien été enregistrées. Bienvenue dans le Cercle.
+          </p>
+          <Progress value={100} className="h-2" aria-label="Onboarding terminé à 100%" />
+          <p className="text-xs text-primary mt-4 tracking-widest uppercase">Redirection en cours…</p>
+        </div>
+      </div>
+    );
+  }
 
   const totalSteps = 2;
   return (
@@ -99,10 +124,24 @@ const Onboarding = () => {
         </div>
 
         <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-xl shadow-primary/5">
-          <div className="flex gap-1.5 mb-8">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-              <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < step ? "bg-primary" : "bg-border"}`} />
-            ))}
+          <div className="mb-8 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground tracking-widest uppercase">
+                Étape {step}/{totalSteps}
+              </span>
+              <span className="text-primary font-semibold">{progressPct}%</span>
+            </div>
+            <Progress value={progressPct} className="h-2" aria-label={`Progression de l'inscription : ${progressPct}%`} />
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className={`inline-flex items-center gap-1 ${photoValid ? "text-primary" : ""}`}>
+                {photoValid ? <Check className="w-3 h-3" /> : <span className="w-3 h-3 rounded-full border border-current" />}
+                Photo
+              </span>
+              <span className={`inline-flex items-center gap-1 ${bioValid ? "text-primary" : ""}`}>
+                {bioValid ? <Check className="w-3 h-3" /> : <span className="w-3 h-3 rounded-full border border-current" />}
+                Bio
+              </span>
+            </div>
           </div>
 
           {step === 1 && (
