@@ -71,13 +71,32 @@ const Auth = () => {
         options: { emailRedirectTo: window.location.origin, data: { name } },
       });
       if (error) throw error;
-      // Mettre à jour le profil créé automatiquement avec gender/orientation/name
+      // Garantir l'existence du profil de base pour éviter un onboarding en boucle
       if (data.user) {
-        await supabase.from("profiles").update({
+        const profilePayload = {
           name: name.trim(),
           gender,
           orientation,
-        }).eq("created_by", data.user.id);
+        };
+
+        const { data: existingProfiles, error: existingError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("created_by", data.user.id)
+          .limit(1);
+
+        if (existingError) throw existingError;
+
+        const existingProfileId = existingProfiles?.[0]?.id;
+        const { error: profileError } = existingProfileId
+          ? await supabase.from("profiles").update(profilePayload).eq("id", existingProfileId)
+          : await supabase.from("profiles").insert({
+              id: data.user.id,
+              created_by: data.user.id,
+              ...profilePayload,
+            });
+
+        if (profileError) throw profileError;
       }
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Vérifiez votre email pour confirmer votre compte." });
       resetSignup();
