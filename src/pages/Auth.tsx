@@ -100,6 +100,8 @@ const Auth = () => {
       }
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Vérifiez votre email pour confirmer votre compte." });
       resetSignup();
+      // Redirect to pricing page after successful signup
+      navigate("/#pricing");
       setMode("login");
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
