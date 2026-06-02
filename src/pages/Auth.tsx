@@ -68,36 +68,14 @@ const Auth = () => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { emailRedirectTo: window.location.origin, data: { name } },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { name: name.trim(), gender, orientation },
+        },
       });
       if (error) throw error;
-      // Garantir l'existence du profil de base pour éviter un onboarding en boucle
-      if (data.user) {
-        const profilePayload = {
-          name: name.trim(),
-          gender,
-          orientation,
-        };
-
-        const { data: existingProfiles, error: existingError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("created_by", data.user.id)
-          .limit(1);
-
-        if (existingError) throw existingError;
-
-        const existingProfileId = existingProfiles?.[0]?.id;
-        const { error: profileError } = existingProfileId
-          ? await supabase.from("profiles").update(profilePayload).eq("id", existingProfileId)
-          : await supabase.from("profiles").insert({
-              id: data.user.id,
-              created_by: data.user.id,
-              ...profilePayload,
-            });
-
-        if (profileError) throw profileError;
-      }
+      // Le trigger handle_new_user crée le profil de base automatiquement
+      // (avec name/gender/orientation lus depuis raw_user_meta_data).
       toast({ title: "Bienvenue dans le Cercle ✨", description: "Vérifiez votre email pour confirmer votre compte." });
       resetSignup();
       // Redirect to pricing page after successful signup
