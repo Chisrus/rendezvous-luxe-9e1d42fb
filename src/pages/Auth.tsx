@@ -69,18 +69,27 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signUp({
         email, password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: { name: name.trim(), gender, orientation },
         },
       });
       if (error) throw error;
       // Le trigger handle_new_user crée le profil de base automatiquement
       // (avec name/gender/orientation lus depuis raw_user_meta_data).
-      toast({ title: "Bienvenue dans le Cercle ✨", description: "Vérifiez votre email pour confirmer votre compte." });
+      const hasSession = !!data.session;
+      toast({
+        title: hasSession ? "Bienvenue dans le Cercle ✨" : "Inscription créée ✨",
+        description: hasSession
+          ? "Votre compte est prêt. Complétez votre profil maintenant."
+          : "Vérifiez votre email pour confirmer votre compte.",
+      });
       resetSignup();
-      // Redirect to pricing page after successful signup
-      navigate("/#pricing");
+      if (hasSession) {
+        navigate("/onboarding", { replace: true });
+        return;
+      }
       setMode("login");
+      navigate("/auth", { replace: true });
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     } finally { setLoading(false); }
