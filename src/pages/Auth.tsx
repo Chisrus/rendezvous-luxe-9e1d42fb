@@ -23,11 +23,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, onboardingComplete } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/profiles", { replace: true });
-  }, [user, authLoading, navigate]);
+    if (authLoading || !user || onboardingComplete === null) return;
+    navigate(onboardingComplete ? "/profiles" : "/onboarding", { replace: true });
+  }, [user, authLoading, onboardingComplete, navigate]);
 
   const resetSignup = () => {
     setStep(1);
@@ -89,7 +90,6 @@ const Auth = () => {
         return;
       }
       setMode("login");
-      navigate("/auth", { replace: true });
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     } finally { setLoading(false); }
