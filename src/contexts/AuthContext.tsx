@@ -110,6 +110,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
+    // Hydrate the existing session immediately to avoid auth race conditions
+    // on refresh / just-after-signup redirects.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      processUser(session?.user ?? null);
+    });
+
     // Safety fallback - if nothing fires within 8s, stop loading
     const fallbackTimer = setTimeout(() => {
       if (mountedRef.current) {
