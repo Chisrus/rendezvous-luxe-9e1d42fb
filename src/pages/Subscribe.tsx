@@ -16,7 +16,7 @@ const Subscribe = () => {
 
   useEffect(() => {
     if (!subLoading && (isAdmin || plan !== "free")) {
-      navigate("/profiles", { replace: true });
+      navigate("/onboarding", { replace: true });
     }
   }, [subLoading, plan, isAdmin, navigate]);
 
