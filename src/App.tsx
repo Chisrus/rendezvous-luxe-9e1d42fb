@@ -22,6 +22,7 @@ const Admirers = lazy(() => import("./pages/Admirers"));
 const UserNotifications = lazy(() => import("./pages/UserNotifications"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Subscribe = lazy(() => import("./pages/Subscribe"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/notifications" element={<UserNotifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/subscribe" element={<Subscribe />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/contact" element={<Contact />} />
