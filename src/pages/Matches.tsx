@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, MapPin, BadgeCheck, Crown } from "lucide-react";
 import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
+import { useRequireSubscription } from "@/hooks/useRequireSubscription";
 
 interface MatchProfile {
   id: string;
@@ -23,6 +24,7 @@ const Matches = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   useRequireOnboarding();
+  useRequireSubscription();
   const [matches, setMatches] = useState<MatchProfile[]>([]);
   const [busy, setBusy] = useState(true);
 

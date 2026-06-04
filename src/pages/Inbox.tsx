@@ -10,6 +10,7 @@ import { inboxCache } from "@/lib/inboxCache";
 import { useSubscription } from "@/hooks/useSubscription";
 import PaywallModal from "@/components/PaywallModal";
 import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
+import { useRequireSubscription } from "@/hooks/useRequireSubscription";
 
 const FREE_DAILY_MESSAGES = 3;
 
@@ -34,6 +35,7 @@ const Inbox = () => {
   const { user, loading } = useAuth();
   const { isFree, loading: subLoading } = useSubscription();
   useRequireOnboarding();
+  useRequireSubscription();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialUserId = user?.id ?? "";

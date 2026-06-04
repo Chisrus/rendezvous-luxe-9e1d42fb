@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Heart, Lock, MapPin, MessageCircle, BadgeCheck, Sparkles } from "lucide-react";
 import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
+import { useRequireSubscription } from "@/hooks/useRequireSubscription";
 
 interface Admirer {
   profile_id: string;
@@ -25,6 +26,7 @@ const Admirers = () => {
   const { isAtLeast, loading: subLoading } = useSubscription();
   const navigate = useNavigate();
   useRequireOnboarding();
+  useRequireSubscription();
   const [admirers, setAdmirers] = useState<Admirer[]>([]);
   const [fetching, setFetching] = useState(true);
 

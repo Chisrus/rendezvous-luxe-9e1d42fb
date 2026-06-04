@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
 import PaywallModal from "@/components/PaywallModal";
 import { useRequireOnboarding } from "@/hooks/useRequireOnboarding";
+import { useRequireSubscription } from "@/hooks/useRequireSubscription";
 
 const FREE_DAILY_LIKES = 5;
 
@@ -75,6 +76,7 @@ const Profiles = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   useRequireOnboarding();
+  useRequireSubscription();
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
