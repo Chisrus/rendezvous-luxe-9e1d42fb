@@ -93,7 +93,7 @@ const Auth = () => {
 
       resetSignup();
       if (hasSession) {
-        navigate("/onboarding", { replace: true });
+        navigate("/subscribe", { replace: true });
         return;
       }
       setMode("login");
