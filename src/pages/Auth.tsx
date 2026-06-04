@@ -68,13 +68,6 @@ const Auth = () => {
   const handleSignup = async () => {
     setLoading(true);
     try {
-      // Validation de la configuration Supabase
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
-        throw new Error(
-          "Configuration Supabase manquante. Contactez l'administrateur pour configurer les variables d'environnement."
-        );
-      }
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -106,9 +99,12 @@ const Auth = () => {
       setMode("login");
     } catch (err: any) {
       console.error("Erreur d'inscription:", err);
-      const errorMsg = err?.message?.includes("Invalid")
+      const rawMessage = err?.message || "";
+      const errorMsg = rawMessage.includes("Invalid")
         ? "Veuillez vérifier vos identifiants (email valide, mot de passe de 6+ caractères)"
-        : err?.message || "Une erreur est survenue lors de l'inscription";
+        : rawMessage.includes("Failed to fetch") || rawMessage.includes("placeholder")
+          ? "Inscription momentanément indisponible. Réessayez dans un instant."
+          : rawMessage || "Une erreur est survenue lors de l'inscription";
       toast({ title: "Erreur inscription", description: errorMsg, variant: "destructive" });
     } finally { setLoading(false); }
   };
