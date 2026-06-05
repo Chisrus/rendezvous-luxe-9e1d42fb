@@ -26,8 +26,10 @@ const Auth = () => {
   const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/profiles", { replace: true });
-  }, [user, authLoading, navigate]);
+    // Ne redirige que si on est en mode "login" ; en signup, on reste sur la page
+    // pour permettre l'affichage de l'étape 5 (abonnement) après création du compte.
+    if (!authLoading && user && mode === "login") navigate("/profiles", { replace: true });
+  }, [user, authLoading, navigate, mode]);
 
   const resetSignup = () => {
     setStep(1);
@@ -141,6 +143,9 @@ const Auth = () => {
   }
 
   if (mode === "login") {
+    if (user) {
+      return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Redirection...</div>;
+    }
     return (
       <Shell title="Connexion">
         <form onSubmit={handleLogin} className="space-y-5">
