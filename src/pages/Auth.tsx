@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Diamond, ArrowRight, ArrowLeft, Check, User as UserIcon, UserRound, Users, AlertCircle } from "lucide-react";
+import { Diamond, ArrowRight, ArrowLeft, Check, User as UserIcon, UserRound, Users, AlertCircle, Crown, Star, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -91,11 +91,12 @@ const Auth = () => {
           : "Vérifiez votre email pour confirmer votre compte.",
       });
 
-      resetSignup();
       if (hasSession) {
-        navigate("/subscribe", { replace: true });
+        // Passe à l'étape 5 : choix de l'abonnement / paiement Wave
+        setStep(5);
         return;
       }
+      resetSignup();
       setMode("login");
     } catch (err: any) {
       console.error("Erreur d'inscription:", err);
@@ -147,7 +148,7 @@ const Auth = () => {
     );
   }
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   return (
     <Shell title={`Étape ${step} / ${totalSteps}`}>
       <div className="flex gap-1.5 mb-8">
@@ -251,6 +252,57 @@ const Auth = () => {
             En vous inscrivant, vous acceptez nos <a href="/terms" className="text-primary hover:underline">conditions</a>.
           </p>
         </Step>
+      )}
+
+      {step === 5 && (
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+              <Clock className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[11px] text-primary tracking-widest uppercase">Activation requise</span>
+            </div>
+            <h2 className="text-2xl font-semibold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Choisissez votre abonnement
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Réglez via Wave. Votre accès est activé par notre équipe sous quelques minutes.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <PlanRow
+              icon={<Star className="w-5 h-5 text-primary" />}
+              name="Découverte"
+              price="3 000 F"
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=3000"
+            />
+            <PlanRow
+              icon={<Crown className="w-5 h-5 text-primary" />}
+              name="Premium"
+              price="5 000 F"
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=5000"
+              highlighted
+              badge="Populaire"
+            />
+            <PlanRow
+              icon={<Diamond className="w-5 h-5 text-primary" />}
+              name="VIP"
+              price="10 000 F"
+              link="https://pay.wave.com/m/M_ci_FQHZsKYkp65N/c/ci/?amount=10000"
+            />
+          </div>
+
+          <Button
+            type="button"
+            onClick={() => navigate("/subscribe", { replace: true })}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold"
+          >
+            J'ai payé — continuer <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Après paiement, votre accès au Cercle sera activé manuellement par notre équipe.
+          </p>
+        </div>
       )}
 
       <p className="text-center text-sm text-muted-foreground mt-6">
@@ -396,5 +448,31 @@ const PasswordStrength = ({ value }: { value: string }) => {
     </div>
   );
 };
+
+const PlanRow = ({
+  icon, name, price, link, highlighted, badge,
+}: { icon: React.ReactNode; name: string; price: string; link: string; highlighted?: boolean; badge?: string }) => (
+  <a
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`relative flex items-center justify-between gap-3 px-5 py-4 rounded-xl border-2 transition-all ${
+      highlighted
+        ? "border-primary bg-primary/10"
+        : "border-border/50 bg-background hover:border-primary/40"
+    }`}
+  >
+    {badge && (
+      <span className="absolute -top-2 right-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold tracking-wide">
+        {badge}
+      </span>
+    )}
+    <span className="flex items-center gap-3">
+      {icon}
+      <span className="font-medium text-foreground">{name}</span>
+    </span>
+    <span className="text-foreground font-semibold">{price}</span>
+  </a>
+);
 
 export default Auth;
