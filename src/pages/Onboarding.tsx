@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Camera, Diamond, Check, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+
 const Onboarding = () => {
   const { user, loading, onboardingComplete, refreshOnboarding } = useAuth();
   const navigate = useNavigate();
@@ -19,17 +21,21 @@ const Onboarding = () => {
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
+  useEffect(() => {
+    if (!hasBackend) return;
+    if (!loading && !user) navigate("/auth");
+  }, [loading, user, navigate]);
 
   // Redirection instantanée si le contexte sait déjà que c'est complet
   useEffect(() => {
+    if (!hasBackend) return;
     if (onboardingComplete === true) navigate("/profiles", { replace: true });
   }, [onboardingComplete, navigate]);
 
   // Garde serveur autoritaire : vérifie via RPC si l'onboarding est déjà complet
   // (évite la boucle si le cache local est obsolète après un refresh).
   useEffect(() => {
-    if (!user) return;
+    if (!hasBackend || !user) return;
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase.rpc("is_onboarding_complete", { _user_id: user.id });
@@ -44,7 +50,7 @@ const Onboarding = () => {
 
   // Pré-remplir si données partielles existantes
   useEffect(() => {
-    if (!user) return;
+    if (!hasBackend || !user) return;
     supabase.from("profiles").select("bio, photo_url").eq("created_by", user.id).maybeSingle()
       .then(({ data }) => {
         if (data?.photo_url) setPhotoUrl(data.photo_url);
@@ -58,6 +64,12 @@ const Onboarding = () => {
   const progressPct = Math.round((completedSteps / 2) * 100);
 
   const handleFinish = async () => {
+    if (!hasBackend) {
+      setCompleted(true);
+      toast({ title: "Profil enregistré", description: "Le tunnel public est actif pendant la refonte du backend." });
+      setTimeout(() => navigate("/", { replace: true }), 1200);
+      return;
+    }
     if (!user) return;
     setSaving(true);
     try {
