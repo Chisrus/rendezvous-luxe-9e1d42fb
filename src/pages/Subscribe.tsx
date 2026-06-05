@@ -79,19 +79,14 @@ const Subscribe = () => {
             Si vous avez déjà effectué votre paiement, notre équipe traite l'activation sous quelques minutes.
             Vous pouvez actualiser pour vérifier votre statut.
           </p>
-          <Button onClick={() => refresh()} variant="outline" className="rounded-full">
-            Actualiser mon statut
+          {hasBackend && (
+            <Button onClick={() => refresh()} variant="outline" className="rounded-full">
+              Actualiser mon statut
+            </Button>
+          )}
+          <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-0 md:ml-3">
+            J'ai payé — continuer
           </Button>
-          {!hasBackend && (
-            <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-3">
-              J'ai payé — continuer
-            </Button>
-          )}
-          {hasBackend && fromSignup && (
-            <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-3">
-              J'ai payé — continuer
-            </Button>
-          )}
         </div>
       </section>
     </div>
