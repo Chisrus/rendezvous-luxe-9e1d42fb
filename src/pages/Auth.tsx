@@ -26,8 +26,10 @@ const Auth = () => {
   const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/profiles", { replace: true });
-  }, [user, authLoading, navigate]);
+    // Ne redirige que si on est en mode "login" ; en signup, on reste sur la page
+    // pour permettre l'affichage de l'étape 5 (abonnement) après création du compte.
+    if (!authLoading && user && mode === "login") navigate("/profiles", { replace: true });
+  }, [user, authLoading, navigate, mode]);
 
   const resetSignup = () => {
     setStep(1);
@@ -79,6 +81,30 @@ const Auth = () => {
 
       if (error) {
         console.error("Erreur Supabase auth:", error);
+        const msg = (error.message || "").toLowerCase();
+        // Compte déjà existant → on tente la connexion silencieuse puis on avance
+        if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInError) {
+            toast({
+              title: "Compte déjà existant",
+              description: "Cet email est déjà utilisé. Connectez-vous avec votre mot de passe.",
+              variant: "destructive",
+            });
+            return;
+          }
+          toast({ title: "Bienvenue ✨", description: "Choisissez votre abonnement." });
+          setStep(5);
+          return;
+        }
+        // « Load failed » / « Failed to fetch » : on vérifie si une session existe déjà
+        if (msg.includes("load failed") || msg.includes("failed to fetch")) {
+          const { data: sess } = await supabase.auth.getSession();
+          if (sess?.session) {
+            setStep(5);
+            return;
+          }
+        }
         throw error;
       }
 
@@ -96,8 +122,10 @@ const Auth = () => {
         setStep(5);
         return;
       }
-      resetSignup();
-      setMode("login");
+      // Pas de session (confirmation email requise) : on avance quand même
+      // vers l'étape 5 pour ne pas bloquer le tunnel d'inscription.
+      setStep(5);
+      return;
     } catch (err: any) {
       console.error("Erreur d'inscription:", err);
       const rawMessage = err?.message || "";
@@ -115,6 +143,9 @@ const Auth = () => {
   }
 
   if (mode === "login") {
+    if (user) {
+      return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Redirection...</div>;
+    }
     return (
       <Shell title="Connexion">
         <form onSubmit={handleLogin} className="space-y-5">
@@ -217,7 +248,7 @@ const Auth = () => {
           title="Créez votre accès"
           subtitle="Dernière étape — votre compte est presque prêt."
           onBack={() => setStep(3)}
-          nextLabel={loading ? "Création..." : "Rejoindre le Cercle"}
+          nextLabel={loading ? "Création..." : "Continuer"}
           onNext={() => email && password.length >= 6 && handleSignup()}
           canNext={!loading && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length >= 6}
         >
