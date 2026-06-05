@@ -1,28 +1,9 @@
 import { Check, Crown, Star, Diamond, Clock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-
-const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 const Subscribe = () => {
-  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
-  const { plan, loading: subLoading, refresh } = useSubscription();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!hasBackend) return;
-    if (!authLoading && !user) navigate("/auth", { replace: true });
-  }, [authLoading, user, navigate]);
-
-  useEffect(() => {
-    if (!hasBackend) return;
-    if (!subLoading && (isAdmin || plan !== "free")) {
-      navigate("/onboarding", { replace: true });
-    }
-  }, [subLoading, plan, isAdmin, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,8 +13,8 @@ const Subscribe = () => {
             <span className="text-primary font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Rencontre</span>
             <span className="text-foreground font-light">DeLuxe</span>
           </span>
-          <Button size="sm" variant="ghost" onClick={() => { signOut(); navigate("/"); }} className="text-muted-foreground">
-            <LogOut className="w-4 h-4 mr-2" /> Déconnexion
+          <Button size="sm" variant="ghost" onClick={() => navigate("/auth", { replace: true })} className="text-muted-foreground">
+            <LogOut className="w-4 h-4 mr-2" /> Retour
           </Button>
         </div>
       </nav>
@@ -75,13 +56,8 @@ const Subscribe = () => {
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
             Si vous avez déjà effectué votre paiement, notre équipe traite l'activation sous quelques minutes.
-            Vous pouvez actualiser pour vérifier votre statut.
+            Une fois votre paiement effectué, poursuivez simplement vers l'étape suivante.
           </p>
-          {hasBackend && (
-            <Button onClick={() => refresh()} variant="outline" className="rounded-full">
-              Actualiser mon statut
-            </Button>
-          )}
           <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-0 md:ml-3">
             J'ai payé — continuer
           </Button>
