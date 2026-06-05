@@ -2,6 +2,8 @@ import { Check, Crown, Star, Diamond, Clock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
+const FRONTEND_ONLY_SIGNUP_FLOW = true;
+
 const Subscribe = () => {
   const navigate = useNavigate();
 
