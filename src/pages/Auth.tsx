@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 type Mode = "login" | "signup" | "forgot";
 type Gender = "homme" | "femme" | "non-binaire";
 type Orientation = "hetero" | "homo" | "bi" | "pan" | "trans" | "autre";
+const FRONTEND_ONLY_SIGNUP_FLOW = true;
 
 const Auth = () => {
   const [mode, setMode] = useState<Mode>("login");
@@ -27,6 +28,7 @@ const Auth = () => {
   useEffect(() => {
     // Ne redirige que si on est en mode "login" ; en signup, on reste sur la page
     // pour permettre l'affichage de l'étape 5 (abonnement) après création du compte.
+    if (FRONTEND_ONLY_SIGNUP_FLOW) return;
     if (!authLoading && user && mode === "login") navigate("/profiles", { replace: true });
   }, [user, authLoading, navigate, mode]);
 
@@ -56,7 +58,7 @@ const Auth = () => {
   }
 
   if (mode === "login") {
-    if (user) {
+    if (user && !FRONTEND_ONLY_SIGNUP_FLOW) {
       return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Redirection...</div>;
     }
     return (
