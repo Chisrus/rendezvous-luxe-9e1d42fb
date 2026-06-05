@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +10,6 @@ import { useAuth } from "@/hooks/useAuth";
 type Mode = "login" | "signup" | "forgot";
 type Gender = "homme" | "femme" | "non-binaire";
 type Orientation = "hetero" | "homo" | "bi" | "pan" | "trans" | "autre";
-const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 const Auth = () => {
   const [mode, setMode] = useState<Mode>("login");
@@ -40,41 +38,12 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasBackend) {
-      toast({ title: "Connexion indisponible", description: "Le tunnel de paiement reste disponible pendant la refonte du backend." });
-      navigate("/auth", { replace: true });
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast({ title: "Bienvenue !", description: "Connexion réussie." });
-      navigate("/profiles");
-    } catch (err: any) {
-      console.error("Erreur connexion:", err);
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Connexion temporairement désactivée", description: "Utilisez le parcours d'inscription et de paiement pendant la refonte du backend." });
   };
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasBackend) {
-      toast({ title: "Email indisponible", description: "La réinitialisation sera remise en place après la refonte du backend." });
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
-      toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail." });
-      setMode("login");
-    } catch (err: any) {
-      console.error("Erreur reset:", err);
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Fonction bientôt réactivée", description: "La réinitialisation sera remise en place après la refonte du backend." });
   };
 
   const handleSignup = async () => {
