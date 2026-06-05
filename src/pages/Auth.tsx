@@ -78,79 +78,8 @@ const Auth = () => {
   };
 
   const handleSignup = async () => {
-    if (!hasBackend) {
-      toast({ title: "Étape suivante", description: "Choisissez maintenant votre abonnement Wave." });
-      setStep(5);
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
-          data: { name: name.trim(), gender, orientation },
-        },
-      });
-
-      if (error) {
-        console.error("Erreur Supabase auth:", error);
-        const msg = (error.message || "").toLowerCase();
-        // Compte déjà existant → on tente la connexion silencieuse puis on avance
-        if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
-          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInError) {
-            toast({
-              title: "Compte déjà existant",
-              description: "Cet email est déjà utilisé. Connectez-vous avec votre mot de passe.",
-              variant: "destructive",
-            });
-            return;
-          }
-          toast({ title: "Bienvenue ✨", description: "Choisissez votre abonnement." });
-          setStep(5);
-          return;
-        }
-        // « Load failed » / « Failed to fetch » : on vérifie si une session existe déjà
-        if (msg.includes("load failed") || msg.includes("failed to fetch")) {
-          const { data: sess } = await supabase.auth.getSession();
-          if (sess?.session) {
-            setStep(5);
-            return;
-          }
-        }
-        throw error;
-      }
-
-      // Le trigger handle_new_user crée le profil automatiquement avec les métadonnées
-      const hasSession = !!data.session;
-      toast({
-        title: hasSession ? "Bienvenue dans le Cercle ✨" : "Inscription créée ✨",
-        description: hasSession
-          ? "Votre compte est prêt. Complétez votre profil maintenant."
-          : "Vérifiez votre email pour confirmer votre compte.",
-      });
-
-      if (hasSession) {
-        // Passe à l'étape 5 : choix de l'abonnement / paiement Wave
-        setStep(5);
-        return;
-      }
-      // Pas de session (confirmation email requise) : on avance quand même
-      // vers l'étape 5 pour ne pas bloquer le tunnel d'inscription.
-      setStep(5);
-      return;
-    } catch (err: any) {
-      console.error("Erreur d'inscription:", err);
-      const rawMessage = err?.message || "";
-      const errorMsg = rawMessage.includes("Invalid")
-        ? "Veuillez vérifier vos identifiants (email valide, mot de passe de 6+ caractères)"
-        : rawMessage.includes("Failed to fetch") || rawMessage.includes("placeholder")
-          ? "Inscription momentanément indisponible. Réessayez dans un instant."
-          : rawMessage || "Une erreur est survenue lors de l'inscription";
-      toast({ title: "Erreur inscription", description: errorMsg, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Étape suivante", description: "Choisissez maintenant votre abonnement Wave." });
+    setStep(5);
   };
 
   if (authLoading) {
