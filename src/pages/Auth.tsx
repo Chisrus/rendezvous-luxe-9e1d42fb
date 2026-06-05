@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 type Mode = "login" | "signup" | "forgot";
 type Gender = "homme" | "femme" | "non-binaire";
 type Orientation = "hetero" | "homo" | "bi" | "pan" | "trans" | "autre";
+const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 const Auth = () => {
   const [mode, setMode] = useState<Mode>("login");
@@ -39,6 +40,11 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasBackend) {
+      toast({ title: "Connexion indisponible", description: "Le tunnel de paiement reste disponible pendant la refonte du backend." });
+      navigate("/auth", { replace: true });
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -53,6 +59,10 @@ const Auth = () => {
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasBackend) {
+      toast({ title: "Email indisponible", description: "La réinitialisation sera remise en place après la refonte du backend." });
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -68,6 +78,11 @@ const Auth = () => {
   };
 
   const handleSignup = async () => {
+    if (!hasBackend) {
+      toast({ title: "Étape suivante", description: "Choisissez maintenant votre abonnement Wave." });
+      setStep(5);
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -323,9 +338,9 @@ const Auth = () => {
             />
           </div>
 
-          <Button
-            type="button"
-            onClick={() => navigate("/subscribe", { replace: true })}
+           <Button
+             type="button"
+             onClick={() => navigate("/subscribe", { replace: true, state: { fromSignup: true, signupDraft: { name: name.trim(), gender, orientation, email } } })}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold"
           >
             J'ai payé — continuer <ArrowRight className="w-4 h-4 ml-1" />
