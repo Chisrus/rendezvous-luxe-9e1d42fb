@@ -2,19 +2,25 @@ import { Check, Crown, Star, Diamond, Clock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+
+const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 const Subscribe = () => {
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const { plan, loading: subLoading, refresh } = useSubscription();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromSignup = Boolean((location.state as { fromSignup?: boolean } | null)?.fromSignup);
 
   useEffect(() => {
+    if (!hasBackend) return;
     if (!authLoading && !user) navigate("/auth", { replace: true });
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
+    if (!hasBackend) return;
     if (!subLoading && (isAdmin || plan !== "free")) {
       navigate("/onboarding", { replace: true });
     }
@@ -76,6 +82,16 @@ const Subscribe = () => {
           <Button onClick={() => refresh()} variant="outline" className="rounded-full">
             Actualiser mon statut
           </Button>
+          {!hasBackend && (
+            <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-3">
+              J'ai payé — continuer
+            </Button>
+          )}
+          {hasBackend && fromSignup && (
+            <Button onClick={() => navigate("/onboarding", { replace: true })} className="rounded-full ml-3">
+              J'ai payé — continuer
+            </Button>
+          )}
         </div>
       </section>
     </div>
