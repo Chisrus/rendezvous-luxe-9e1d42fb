@@ -11,8 +11,6 @@ const Subscribe = () => {
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const { plan, loading: subLoading, refresh } = useSubscription();
   const navigate = useNavigate();
-  const location = useLocation();
-  const fromSignup = Boolean((location.state as { fromSignup?: boolean } | null)?.fromSignup);
 
   useEffect(() => {
     if (!hasBackend) return;
