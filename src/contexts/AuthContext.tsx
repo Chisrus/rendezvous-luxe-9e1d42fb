@@ -21,6 +21,7 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 const ONB_KEY = (uid: string) => `rdl:onb:${uid}`;
+const hasBackend = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 const clearOnbCache = (uid?: string | null) => {
   try {
@@ -43,6 +44,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     mountedRef.current = true;
+
+    if (!hasBackend) {
+      setUser(null);
+      setIsAdmin(false);
+      setOnboardingComplete(null);
+      setLoading(false);
+      return () => {
+        mountedRef.current = false;
+      };
+    }
 
     const checkAdmin = async (userId: string): Promise<boolean> => {
       try {
@@ -132,11 +143,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     clearOnbCache(user?.id);
+    if (!hasBackend) {
+      setUser(null);
+      setIsAdmin(false);
+      setOnboardingComplete(null);
+      return;
+    }
     await supabase.auth.signOut();
   };
 
   const refreshOnboarding = async () => {
-    if (!user) return;
+    if (!hasBackend || !user) return;
     const { data, error } = await supabase.rpc("is_onboarding_complete", { _user_id: user.id });
     let done: boolean;
     if (!error && typeof data === "boolean") {
