@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 type Mode = "login" | "signup" | "forgot";
 type Gender = "homme" | "femme" | "non-binaire";
 type Orientation = "hetero" | "homo" | "bi" | "pan" | "trans" | "autre";
+const FRONTEND_ONLY_SIGNUP_FLOW = true;
 
 const Auth = () => {
   const [mode, setMode] = useState<Mode>("login");
@@ -28,6 +28,7 @@ const Auth = () => {
   useEffect(() => {
     // Ne redirige que si on est en mode "login" ; en signup, on reste sur la page
     // pour permettre l'affichage de l'étape 5 (abonnement) après création du compte.
+    if (FRONTEND_ONLY_SIGNUP_FLOW) return;
     if (!authLoading && user && mode === "login") navigate("/profiles", { replace: true });
   }, [user, authLoading, navigate, mode]);
 
@@ -39,103 +40,17 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast({ title: "Bienvenue !", description: "Connexion réussie." });
-      navigate("/profiles");
-    } catch (err: any) {
-      console.error("Erreur connexion:", err);
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Connexion temporairement désactivée", description: "Utilisez le parcours d'inscription et de paiement pendant la refonte du backend." });
   };
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
-      toast({ title: "Email envoyé", description: "Vérifiez votre boîte mail." });
-      setMode("login");
-    } catch (err: any) {
-      console.error("Erreur reset:", err);
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Fonction bientôt réactivée", description: "La réinitialisation sera remise en place après la refonte du backend." });
   };
 
   const handleSignup = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
-          data: { name: name.trim(), gender, orientation },
-        },
-      });
-
-      if (error) {
-        console.error("Erreur Supabase auth:", error);
-        const msg = (error.message || "").toLowerCase();
-        // Compte déjà existant → on tente la connexion silencieuse puis on avance
-        if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
-          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInError) {
-            toast({
-              title: "Compte déjà existant",
-              description: "Cet email est déjà utilisé. Connectez-vous avec votre mot de passe.",
-              variant: "destructive",
-            });
-            return;
-          }
-          toast({ title: "Bienvenue ✨", description: "Choisissez votre abonnement." });
-          setStep(5);
-          return;
-        }
-        // « Load failed » / « Failed to fetch » : on vérifie si une session existe déjà
-        if (msg.includes("load failed") || msg.includes("failed to fetch")) {
-          const { data: sess } = await supabase.auth.getSession();
-          if (sess?.session) {
-            setStep(5);
-            return;
-          }
-        }
-        throw error;
-      }
-
-      // Le trigger handle_new_user crée le profil automatiquement avec les métadonnées
-      const hasSession = !!data.session;
-      toast({
-        title: hasSession ? "Bienvenue dans le Cercle ✨" : "Inscription créée ✨",
-        description: hasSession
-          ? "Votre compte est prêt. Complétez votre profil maintenant."
-          : "Vérifiez votre email pour confirmer votre compte.",
-      });
-
-      if (hasSession) {
-        // Passe à l'étape 5 : choix de l'abonnement / paiement Wave
-        setStep(5);
-        return;
-      }
-      // Pas de session (confirmation email requise) : on avance quand même
-      // vers l'étape 5 pour ne pas bloquer le tunnel d'inscription.
-      setStep(5);
-      return;
-    } catch (err: any) {
-      console.error("Erreur d'inscription:", err);
-      const rawMessage = err?.message || "";
-      const errorMsg = rawMessage.includes("Invalid")
-        ? "Veuillez vérifier vos identifiants (email valide, mot de passe de 6+ caractères)"
-        : rawMessage.includes("Failed to fetch") || rawMessage.includes("placeholder")
-          ? "Inscription momentanément indisponible. Réessayez dans un instant."
-          : rawMessage || "Une erreur est survenue lors de l'inscription";
-      toast({ title: "Erreur inscription", description: errorMsg, variant: "destructive" });
-    } finally { setLoading(false); }
+    toast({ title: "Étape suivante", description: "Choisissez maintenant votre abonnement Wave." });
+    setStep(5);
   };
 
   if (authLoading) {
@@ -143,7 +58,7 @@ const Auth = () => {
   }
 
   if (mode === "login") {
-    if (user) {
+    if (user && !FRONTEND_ONLY_SIGNUP_FLOW) {
       return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Redirection...</div>;
     }
     return (
@@ -323,9 +238,9 @@ const Auth = () => {
             />
           </div>
 
-          <Button
-            type="button"
-            onClick={() => navigate("/subscribe", { replace: true })}
+           <Button
+             type="button"
+             onClick={() => navigate("/subscribe", { replace: true, state: { fromSignup: true, signupDraft: { name: name.trim(), gender, orientation, email } } })}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold"
           >
             J'ai payé — continuer <ArrowRight className="w-4 h-4 ml-1" />
