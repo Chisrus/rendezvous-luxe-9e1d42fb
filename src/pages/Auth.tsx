@@ -217,10 +217,7 @@ const Auth = () => {
       )}
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Déjà membre ?{" "}
-        <button type="button" onClick={() => { setMode("login"); resetSignup(); }} className="text-primary hover:underline">
-          Se connecter
-        </button>
+        Pas encore membre ? Rejoignez le Cercle dès maintenant.
       </p>
     </Shell>
   );
