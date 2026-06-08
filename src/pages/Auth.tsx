@@ -13,7 +13,7 @@ type Orientation = "hetero" | "homo" | "bi" | "pan" | "trans" | "autre";
 const FRONTEND_ONLY_SIGNUP_FLOW = true;
 
 const Auth = () => {
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>("signup");
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
