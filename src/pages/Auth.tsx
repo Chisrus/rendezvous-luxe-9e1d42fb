@@ -57,42 +57,7 @@ const Auth = () => {
     return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Chargement...</div>;
   }
 
-  if (mode === "login") {
-    if (user && !FRONTEND_ONLY_SIGNUP_FLOW) {
-      return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Redirection...</div>;
-    }
-    return (
-      <Shell title="Connexion">
-        <form onSubmit={handleLogin} className="space-y-5">
-          <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="votre@email.com" className="bg-background border-border/50" /></Field>
-          <Field label="Mot de passe"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" className="bg-background border-border/50" /></Field>
-          <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold">
-            {loading ? "Connexion..." : "Se connecter"}
-          </Button>
-          <div className="flex items-center justify-between text-sm">
-            <button type="button" onClick={() => setMode("forgot")} className="text-primary hover:underline">Mot de passe oublié ?</button>
-            <button type="button" onClick={() => { setMode("signup"); setStep(1); }} className="text-primary hover:underline font-medium">Créer un compte →</button>
-          </div>
-        </form>
-      </Shell>
-    );
-  }
-
-  if (mode === "forgot") {
-    return (
-      <Shell title="Mot de passe oublié">
-        <form onSubmit={handleForgot} className="space-y-5">
-          <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="votre@email.com" className="bg-background border-border/50" /></Field>
-          <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-semibold">
-            {loading ? "Envoi..." : "Envoyer le lien"}
-          </Button>
-          <p className="text-center text-sm">
-            <button type="button" onClick={() => setMode("login")} className="text-primary hover:underline">Retour</button>
-          </p>
-        </form>
-      </Shell>
-    );
-  }
+  // Mode login / forgot désactivés : tous les visiteurs passent par l'inscription
 
   const totalSteps = 5;
   return (
